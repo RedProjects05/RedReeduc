@@ -31,58 +31,56 @@ interface ExerciseThumbnailProps {
 export function ExerciseThumbnail({
   category,
   iconName,
-  className = "w-12 h-12",
-  size = 22,
+  className = "w-11 h-11",
+  size = 20,
 }: ExerciseThumbnailProps) {
-  // Select icon based on iconName or fallback to category
   const renderIcon = () => {
     switch (iconName) {
       case "Dumbbell":
-        return <Dumbbell size={size} className="text-blue-400" />;
+        return <Dumbbell size={size} className="text-blue-600" />;
       case "Shield":
-        return <Shield size={size} className="text-emerald-400" />;
+        return <Shield size={size} className="text-emerald-600" />;
       case "Activity":
-        return <Activity size={size} className="text-amber-400" />;
+        return <Activity size={size} className="text-amber-600" />;
       case "RotateCw":
-        return <RotateCw size={size} className="text-indigo-400" />;
+        return <RotateCw size={size} className="text-indigo-600" />;
       case "Hammer":
-        return <Hammer size={size} className="text-orange-400" />;
+        return <Hammer size={size} className="text-orange-600" />;
       case "Footprints":
-        return <Footprints size={size} className="text-cyan-400" />;
+        return <Footprints size={size} className="text-cyan-600" />;
       case "Bike":
-        return <Bike size={size} className="text-teal-400" />;
+        return <Bike size={size} className="text-teal-600" />;
       case "Compass":
-        return <Compass size={size} className="text-purple-400" />;
+        return <Compass size={size} className="text-purple-600" />;
       case "Flame":
-        return <Flame size={size} className="text-rose-400" />;
+        return <Flame size={size} className="text-rose-600" />;
       case "Zap":
-        return <Zap size={size} className="text-yellow-400" />;
+        return <Zap size={size} className="text-amber-500" />;
       case "Repeat":
-        return <Repeat size={size} className="text-pink-400" />;
+        return <Repeat size={size} className="text-pink-600" />;
       case "ArrowUp":
-        return <ArrowUp size={size} className="text-sky-400" />;
+        return <ArrowUp size={size} className="text-sky-600" />;
       case "Eye":
-        return <Eye size={size} className="text-violet-400" />;
+        return <Eye size={size} className="text-violet-600" />;
       case "Target":
-        return <Target size={size} className="text-emerald-400" />;
+        return <Target size={size} className="text-emerald-600" />;
       case "TrendingUp":
-        return <TrendingUp size={size} className="text-lime-400" />;
+        return <TrendingUp size={size} className="text-lime-600" />;
       case "Smile":
-        return <Smile size={size} className="text-cyan-400" />;
+        return <Smile size={size} className="text-cyan-600" />;
       default:
-        // Default category fallback
-        if (category === "Genou") return <Activity size={size} className="text-amber-400" />;
-        if (category === "Épaule") return <RotateCw size={size} className="text-indigo-400" />;
-        if (category === "Cardio & Échauffement") return <Footprints size={size} className="text-cyan-400" />;
-        if (category === "Dos & Tronc") return <Shield size={size} className="text-emerald-400" />;
-        if (category === "Cheville & Pied") return <Compass size={size} className="text-purple-400" />;
-        return <Dumbbell size={size} className="text-blue-400" />;
+        if (category === "Genou") return <Activity size={size} className="text-amber-600" />;
+        if (category === "Épaule") return <RotateCw size={size} className="text-indigo-600" />;
+        if (category === "Cardio & Échauffement") return <Footprints size={size} className="text-cyan-600" />;
+        if (category === "Dos & Tronc") return <Shield size={size} className="text-emerald-600" />;
+        if (category === "Cheville & Pied") return <Compass size={size} className="text-purple-600" />;
+        return <Dumbbell size={size} className="text-blue-600" />;
     }
   };
 
   return (
     <div
-      className={`rounded-full bg-[#182030] border border-[#273248] flex items-center justify-center shrink-0 ${className}`}
+      className={`rounded-2xl bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 shadow-xs ${className}`}
     >
       {renderIcon()}
     </div>

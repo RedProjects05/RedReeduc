@@ -3,13 +3,10 @@
 import React, { useState, useMemo } from "react";
 import {
   Dumbbell,
-  Filter,
   HeartPulse,
   Info,
   Plus,
   Search,
-  Sparkles,
-  Zap,
 } from "lucide-react";
 import { useRedReeducStore } from "@/lib/store";
 import { Exercise, ExerciseCategory } from "@/lib/types";
@@ -50,23 +47,23 @@ export function ExercisesLibraryPage() {
   }, [exercises, searchTerm, selectedCat]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            <Dumbbell className="w-6 h-6 text-blue-400" />
-            <span>Pool d&apos;Exercices Kiné & Musculation</span>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <Dumbbell className="w-6 h-6 text-blue-600" />
+            <span>Pool d&apos;Exercices Rééducation &amp; Musculation</span>
           </h1>
-          <p className="text-xs text-[#8F9BB3] mt-0.5">
-            {exercises.length} exercices disponibles (musculation, rééducation post-opératoire et étirements).
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+            {exercises.length} exercices disponibles (renforcement, mobilité, proprioception et cardio).
           </p>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-lg shadow-blue-600/30 transition-all self-start sm:self-auto cursor-pointer"
+          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Créer un Exercice Personnalisé</span>
@@ -76,13 +73,13 @@ export function ExercisesLibraryPage() {
       {/* Search & Categories */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="w-4 h-4 text-[#8F9BB3] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Rechercher par nom d'exercice, groupe musculaire, matériel..."
-            className="w-full bg-[#121622] border border-[#202738] rounded-2xl pl-10 pr-4 py-3 text-white placeholder-[#54627d] text-sm focus:outline-none focus:border-blue-500"
+            placeholder="Rechercher par nom d'exercice, muscle, matériel..."
+            className="w-full bg-white border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-600 shadow-xs font-medium"
           />
         </div>
 
@@ -96,8 +93,8 @@ export function ExercisesLibraryPage() {
                 onClick={() => setSelectedCat(cat)}
                 className={`px-3.5 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors cursor-pointer ${
                   active
-                    ? "bg-blue-600 text-white"
-                    : "bg-[#121622] text-[#8F9BB3] hover:text-white hover:bg-[#182030] border border-[#202738]"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
                 {cat}
@@ -108,12 +105,12 @@ export function ExercisesLibraryPage() {
       </div>
 
       {/* Exercises Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((exo) => (
           <div
             key={exo.id}
             onClick={() => setSelectedExoDetail(exo)}
-            className="bg-[#121622] border border-[#202738] hover:border-blue-500/50 rounded-2xl p-4 flex flex-col justify-between transition-all hover:bg-[#151a26] cursor-pointer group shadow-sm"
+            className="bg-white border border-slate-200 hover:border-blue-400 rounded-3xl p-5 flex flex-col justify-between transition-all hover:shadow-md cursor-pointer group shadow-xs"
           >
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
@@ -123,26 +120,26 @@ export function ExercisesLibraryPage() {
                   className="w-11 h-11"
                   size={20}
                 />
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#182030] text-[#8F9BB3] border border-[#273248]">
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
                   {exo.category}
                 </span>
               </div>
 
               <div>
-                <h3 className="font-extrabold text-white text-sm group-hover:text-blue-400 transition-colors">
+                <h3 className="font-extrabold text-slate-900 text-sm group-hover:text-blue-600 transition-colors">
                   {exo.name}
                 </h3>
-                <p className="text-xs text-[#8F9BB3] mt-0.5">{exo.bodyPart}</p>
+                <p className="text-xs text-slate-500 mt-0.5 font-medium">{exo.bodyPart}</p>
               </div>
 
-              <div className="text-[11px] text-slate-300 line-clamp-2 bg-[#0c0f18] p-2 rounded-xl border border-[#1b2234]">
+              <div className="text-[11px] text-slate-600 line-clamp-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
                 {exo.instructions}
               </div>
             </div>
 
-            <div className="pt-3 mt-2 border-t border-[#1a2133] flex items-center justify-between text-[11px] text-[#8F9BB3]">
-              <span className="font-medium text-slate-400">{exo.equipment}</span>
-              <span className="text-blue-400 font-bold group-hover:underline flex items-center gap-1">
+            <div className="pt-3 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+              <span className="text-slate-700">{exo.equipment}</span>
+              <span className="text-blue-600 font-bold group-hover:underline flex items-center gap-1">
                 <Info className="w-3 h-3" /> Fiche
               </span>
             </div>
@@ -152,8 +149,8 @@ export function ExercisesLibraryPage() {
 
       {/* Exercise Detail Modal */}
       {selectedExoDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-[#121622] border border-[#232b3e] rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <ExerciseThumbnail
@@ -163,54 +160,56 @@ export function ExercisesLibraryPage() {
                   size={24}
                 />
                 <div>
-                  <h3 className="font-black text-white text-base">
+                  <h3 className="font-black text-slate-900 text-base">
                     {selectedExoDetail.name}
                   </h3>
-                  <p className="text-xs text-[#8F9BB3]">
+                  <p className="text-xs text-slate-500 font-medium">
                     {selectedExoDetail.category} • {selectedExoDetail.bodyPart}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedExoDetail(null)}
-                className="p-1 text-[#8F9BB3] hover:text-white"
+                className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="bg-[#182030] p-3 rounded-xl border border-[#273248]">
-                <span className="block font-bold text-[#8F9BB3] uppercase text-[10px] mb-1">
-                  Instructions & Exécution
+              <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <span className="block font-bold text-slate-700 uppercase text-[10px] mb-1">
+                  Instructions &amp; Exécution
                 </span>
-                <p className="text-slate-200">{selectedExoDetail.instructions}</p>
+                <p className="text-slate-800 leading-relaxed font-medium">
+                  {selectedExoDetail.instructions}
+                </p>
               </div>
 
               {selectedExoDetail.kineTips && (
-                <div className="bg-blue-950/40 p-3 rounded-xl border border-blue-800/40 text-blue-200">
-                  <span className="block font-bold text-blue-300 uppercase text-[10px] mb-1 flex items-center gap-1">
-                    <HeartPulse className="w-3.5 h-3.5" /> Recommandations Kiné
+                <div className="bg-blue-50 p-3 rounded-2xl border border-blue-100 text-blue-900">
+                  <span className="block font-bold text-blue-900 uppercase text-[10px] mb-1 flex items-center gap-1">
+                    <HeartPulse className="w-3.5 h-3.5 text-blue-600" /> Recommandations Kiné
                   </span>
-                  <p>{selectedExoDetail.kineTips}</p>
+                  <p className="font-medium">{selectedExoDetail.kineTips}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-2 text-center pt-1">
-                <div className="bg-[#182030] p-2 rounded-xl">
-                  <span className="block text-[10px] text-[#8F9BB3] uppercase">Équipement</span>
-                  <span className="font-bold text-white">{selectedExoDetail.equipment}</span>
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <span className="block text-[10px] text-slate-500 uppercase font-bold">Équipement</span>
+                  <span className="font-black text-slate-900">{selectedExoDetail.equipment}</span>
                 </div>
-                <div className="bg-[#182030] p-2 rounded-xl">
-                  <span className="block text-[10px] text-[#8F9BB3] uppercase">Repos Conseillé</span>
-                  <span className="font-bold text-white">{selectedExoDetail.defaultRestSeconds}s</span>
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <span className="block text-[10px] text-slate-500 uppercase font-bold">Repos Conseillé</span>
+                  <span className="font-black text-slate-900">{selectedExoDetail.defaultRestSeconds}s</span>
                 </div>
               </div>
             </div>
 
             <button
               onClick={() => setSelectedExoDetail(null)}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl"
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer"
             >
               Fermer
             </button>

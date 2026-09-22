@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  role           String   // "PATIENT" | "KINE"
+  email          String   @unique
+  avatarUrl      String?
+  diagnosis      String?  // Pathologie renseignée par le patient ou le kiné
+  medicalHistory String?  // Antécédents chirurgicaux / médicaux
+  targetGoals    String?  // Objectifs de rééducation
+  kineId         String?  // ID du kiné référent
+  clinicName     String?  // Cabinet pour le kiné
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Exercise {
+  id                 String   @id
+  name               String
+  category           String
+  bodyPart           String
+  equipment          String
+  trackingType       String   // "weight_reps" | "reps_only" | "time" | "distance_time" | "elastic_reps"
+  defaultRestSeconds Int      @default(60)
+  instructions       String
+  kineTips           String?
+  isCustom           Boolean  @default(false)
+  iconName           String?
+  createdAt          DateTime @default(now())
+}
+
+model Routine {
+  id                  String   @id @default(cuid())
+  title               String
+  description         String
+  category            String
+  createdByKineId     String
+  assignedToPatientId String?
+  exercisesJson       String   // JSON stringified list of exercises and target sets
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model WorkoutSession {
+  id                 String    @id @default(cuid())
+  routineId          String?
+  routineTitle       String
+  patientId          String
+  patientName        String
+  kineId             String
+  startTime          DateTime  @default(now())
+  endTime            DateTime?
+  durationSeconds    Int       @default(0)
+  totalVolumeKg      Float     @default(0)
+  completedSetsCount Int       @default(0)
+  totalSetsCount     Int       @default(0)
+  exercisesJson      String    // JSON stringified list of logged exercises & sets
+  painLevel          Int?      // EVA 0 to 10
+  rpeEffort          String?
+  patientFeedback    String?
+  kineComment        String?
+  isCompleted        Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+}

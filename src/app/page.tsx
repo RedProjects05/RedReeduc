@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   Activity,
-  ArrowRight,
   CheckCircle2,
   Clock,
   Dumbbell,
@@ -13,171 +11,169 @@ import {
   HeartPulse,
   Play,
   Stethoscope,
-  TrendingUp,
-  User,
 } from "lucide-react";
 import { useRedReeducStore } from "@/lib/store";
 
 export default function RootHomePage() {
   const router = useRouter();
-  const { activeUser, setActiveUserId } = useRedReeducStore();
+  const { setActiveUserId } = useRedReeducStore();
 
   const handleSelectRole = (role: "PATIENT" | "KINE") => {
     if (role === "PATIENT") {
-      setActiveUserId("patient-1");
+      setActiveUserId("patient-reda");
       router.push("/patient");
     } else {
-      setActiveUserId("kine-1");
+      setActiveUserId("kine-anais");
       router.push("/kine");
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 space-y-10">
+    <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
       
       {/* Hero Header */}
       <div className="text-center space-y-4 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-950/80 border border-blue-800/80 text-blue-400 text-xs font-bold">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-xs">
           <Activity className="w-4 h-4" />
           <span>L&apos;ergonomie Hevy au service de votre Rééducation</span>
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-          Suivez et Réussissez votre <span className="text-blue-500">Rééducation</span>
+        <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+          Rééducation sur-mesure entre <span className="text-blue-600">Kiné</span> et <span className="text-blue-600">Patient</span>
         </h1>
 
-        <p className="text-sm sm:text-base text-[#8F9BB3]">
-          Votre kinésithérapeute prescrit vos séances sur-mesure. Vous vous entraînez avec l&apos;expérience fluide de Hevy (timer de repos, séries cochables, volume et retours douleur EVA).
+        <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
+          Anaïs (Kiné) prescrit les séances avec précision. Reda (Patient) s&apos;entraîne avec l&apos;expérience fluide de Hevy (timer de repos, séries cochables, volume et retours douleur EVA).
         </p>
       </div>
 
-      {/* Dual Portal Selection Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {/* Dual Portal Selection Cards (Reda & Anaïs) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* Patient Portal Card */}
+        {/* Patient Portal Card (Reda) */}
         <div
           onClick={() => handleSelectRole("PATIENT")}
-          className="bg-[#121622] border-2 border-blue-500/40 hover:border-blue-500 rounded-3xl p-6 shadow-xl hover:shadow-blue-500/10 transition-all flex flex-col justify-between cursor-pointer group space-y-6"
+          className="bg-white border-2 border-slate-200 hover:border-blue-500 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between cursor-pointer group space-y-6"
         >
-          <div className="space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 group-hover:scale-105 transition-transform">
-              <Flame className="w-6 h-6 text-blue-400" />
+          <div className="space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform shadow-xs">
+              <Flame className="w-6 h-6 text-blue-600" />
             </div>
 
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-blue-400 bg-blue-950 px-2 py-0.5 rounded border border-blue-800">
-                Mode Entraînement
+              <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                Mode Patient
               </span>
-              <h2 className="text-xl font-black text-white mt-1 group-hover:text-blue-400 transition-colors">
-                Espace Patient (Lucas Martin)
+              <h2 className="text-xl font-black text-slate-900 mt-2 group-hover:text-blue-600 transition-colors">
+                Espace Patient (Reda)
               </h2>
-              <p className="text-xs text-[#8F9BB3] mt-1">
-                Lancez votre séance en direct, cochez vos séries, profitez du chronomètre de repos et transmettez vos bilans.
+              <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">
+                Renseignez votre pathologie, lancez vos séances en direct, cochez vos séries en vert et transmettez vos scores de douleur.
               </p>
             </div>
 
-            <ul className="space-y-1.5 text-xs text-slate-300 pt-2 border-t border-[#1b2234]">
+            <ul className="space-y-2 text-xs text-slate-700 pt-3 border-t border-slate-100 font-medium">
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Interface Hevy dark mode avec chronomètre</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Profil &amp; Pathologie personnalisable par Reda</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Validation des séries avec bip sonore &amp; timer</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Validation des séries avec bip sonore &amp; timer de repos</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Évaluation de la douleur EVA (0 à 10)</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Évaluation de la douleur EVA (0 à 10) transmise au kiné</span>
               </li>
             </ul>
           </div>
 
           <button
             type="button"
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all"
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
           >
             <Play className="w-4 h-4 fill-white" />
-            <span>Entrer comme Patient</span>
+            <span>Entrer comme Patient (Reda)</span>
           </button>
         </div>
 
-        {/* Kiné Portal Card */}
+        {/* Kiné Portal Card (Anaïs) */}
         <div
           onClick={() => handleSelectRole("KINE")}
-          className="bg-[#121622] border-2 border-purple-500/30 hover:border-purple-500 rounded-3xl p-6 shadow-xl hover:shadow-purple-500/10 transition-all flex flex-col justify-between cursor-pointer group space-y-6"
+          className="bg-white border-2 border-slate-200 hover:border-purple-500 rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between cursor-pointer group space-y-6"
         >
-          <div className="space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-purple-400 group-hover:scale-105 transition-transform">
-              <Stethoscope className="w-6 h-6 text-purple-400" />
+          <div className="space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 group-hover:scale-105 transition-transform shadow-xs">
+              <Stethoscope className="w-6 h-6 text-purple-600" />
             </div>
 
             <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-purple-400 bg-purple-950 px-2 py-0.5 rounded border border-purple-800">
-                Mode Praticien
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
+                Mode Kinésithérapeute
               </span>
-              <h2 className="text-xl font-black text-white mt-1 group-hover:text-purple-400 transition-colors">
-                Espace Kiné (Dr. Alexandre Dupont)
+              <h2 className="text-xl font-black text-slate-900 mt-2 group-hover:text-purple-600 transition-colors">
+                Espace Kiné (Anaïs)
               </h2>
-              <p className="text-xs text-[#8F9BB3] mt-1">
-                Prescrivez des programmes sur-mesure, choisissez dans le catalogue d&apos;exercices et suivez la douleur de vos patients.
+              <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">
+                Créez des séances sur-mesure pour Reda, configurez les charges et suivez son évolution et ses alertes de douleur.
               </p>
             </div>
 
-            <ul className="space-y-1.5 text-xs text-slate-300 pt-2 border-t border-[#1b2234]">
+            <ul className="space-y-2 text-xs text-slate-700 pt-3 border-t border-slate-100 font-medium">
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                <span>Créateur de séances avec charges et répétitions</span>
+                <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0" />
+                <span>Créateur de séances avec charges, reps et repos</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                <span>Pool de 30+ exercices de kiné &amp; muscu</span>
+                <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0" />
+                <span>Pool de 30+ exercices kiné &amp; musculation</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                <span>Alertes de douleur et réponses directes au patient</span>
+                <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0" />
+                <span>Alertes de douleur en direct et réponses au patient</span>
               </li>
             </ul>
           </div>
 
           <button
             type="button"
-            className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 transition-all"
+            className="w-full py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-purple-500/20 transition-all cursor-pointer"
           >
             <Stethoscope className="w-4 h-4" />
-            <span>Entrer comme Kinésithérapeute</span>
+            <span>Entrer comme Kiné (Anaïs)</span>
           </button>
         </div>
       </div>
 
       {/* Feature Highlights Banner */}
-      <div className="bg-[#121622] border border-[#202738] rounded-3xl p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-        <div className="space-y-1">
-          <div className="flex items-center justify-center text-blue-400 mb-1">
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center shadow-xs">
+        <div className="space-y-1.5">
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2">
             <Clock className="w-5 h-5" />
           </div>
-          <h4 className="font-bold text-white text-sm">Minuteur de Repos Automatique</h4>
-          <p className="text-[11px] text-[#8F9BB3]">
-            Décompte instantané dès qu&apos;une série est validée, avec alertes sonores.
+          <h4 className="font-bold text-slate-900 text-sm">Minuteur de Repos Automatique</h4>
+          <p className="text-xs text-slate-500 font-medium">
+            Décompte instantané dès qu&apos;une série est cochée en vert, avec signal sonore.
           </p>
         </div>
 
-        <div className="space-y-1">
-          <div className="flex items-center justify-center text-emerald-400 mb-1">
+        <div className="space-y-1.5">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
             <HeartPulse className="w-5 h-5" />
           </div>
-          <h4 className="font-bold text-white text-sm">Échelle de Douleur EVA</h4>
-          <p className="text-[11px] text-[#8F9BB3]">
+          <h4 className="font-bold text-slate-900 text-sm">Échelle de Douleur EVA</h4>
+          <p className="text-xs text-slate-500 font-medium">
             Remontée immédiate du score de douleur ressenti pour adapter le traitement.
           </p>
         </div>
 
-        <div className="space-y-1">
-          <div className="flex items-center justify-center text-amber-400 mb-1">
+        <div className="space-y-1.5">
+          <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-2">
             <Dumbbell className="w-5 h-5" />
           </div>
-          <h4 className="font-bold text-white text-sm">Personnalisation Totale</h4>
-          <p className="text-[11px] text-[#8F9BB3]">
-            Créez des exercices sur-mesure au poids de corps, haltères ou élastiques.
+          <h4 className="font-bold text-slate-900 text-sm">Base PostgreSQL Neon</h4>
+          <p className="text-xs text-slate-500 font-medium">
+            Synchronisation en direct entre l&apos;ordinateur d&apos;Anaïs et le téléphone de Reda.
           </p>
         </div>
       </div>

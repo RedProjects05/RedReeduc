@@ -2,37 +2,26 @@ import { Exercise, Routine, UserProfile, WorkoutSession } from "./types";
 
 export const DEFAULT_USERS: UserProfile[] = [
   {
-    id: "kine-1",
-    name: "Dr. Alexandre Dupont",
-    email: "dr.dupont@cabinet-kine.fr",
+    id: "kine-anais",
+    name: "Anaïs",
+    email: "anais.kine@redreeduc.fr",
     role: "KINE",
-    clinicName: "Cabinet de Kinésithérapie du Sport & Rééducation",
-    avatarUrl: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80",
+    clinicName: "Cabinet de Kinésithérapie du Sport",
   },
   {
-    id: "patient-1",
-    name: "Lucas Martin",
-    email: "lucas.martin@email.fr",
+    id: "patient-reda",
+    name: "Reda",
+    email: "reda@redreeduc.fr",
     role: "PATIENT",
-    kineId: "kine-1",
-    diagnosis: "Post-opératoire LCA Genou Droit (Mois 3) - Renforcement & Stabilité",
-    targetNotes: "Objectif: Récupérer la force du quadriceps droit sans douleur fémoro-patellaire > 3/10. Reprise du footing progressif.",
-    avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "patient-2",
-    name: "Camille Roussel",
-    email: "camille.roussel@email.fr",
-    role: "PATIENT",
-    kineId: "kine-1",
-    diagnosis: "Tendinopathie Coiffe des Rotateurs & Instabilité Épaule Droite",
-    targetNotes: "Travail doux de centrage de la tête humérale, renforcement des rotateurs externes.",
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+    kineId: "kine-anais",
+    diagnosis: "Rupture du LCA genou droit (Post-opératoire)",
+    medicalHistory: "Ligamentoplastie DIDT effectuée il y a 3 mois.",
+    targetGoals: "Récupérer la stabilité et la force du quadriceps sans douleur fémoro-patellaire > 3/10. Reprise du footing.",
   },
 ];
 
 export const DEFAULT_EXERCISES: Exercise[] = [
-  // --- REEDUC GENOU & MEMBRES INFÉRIEURS ---
+  // --- GENOU & MEMBRES INFÉRIEURS ---
   {
     id: "exo-genou-1",
     name: "Chaise au Mur (Isométrie Quadriceps)",
@@ -90,7 +79,7 @@ export const DEFAULT_EXERCISES: Exercise[] = [
     trackingType: "weight_reps",
     defaultRestSeconds: 60,
     instructions: "Un grand pas en avant, descendre le genou arrière vers le sol à angle droit. Remonter en poussant sur le talon avant.",
-    kineTips: "Contrôler la phase descendante. Le genou avant doit rester stable sans rentrer vers l'intérieur (valgus).",
+    kineTips: "Contrôler la phase descendante. Le genou avant doit rester stable sans rentrer vers l'intérieur.",
     iconName: "Flame",
   },
   {
@@ -118,7 +107,7 @@ export const DEFAULT_EXERCISES: Exercise[] = [
     iconName: "Repeat",
   },
 
-  // --- REEDUC ÉPAULE & COIFFE DES ROTATEURS ---
+  // --- ÉPAULE & COIFFE DES ROTATEURS ---
   {
     id: "exo-epaule-1",
     name: "Rotateurs Externes à l'Élastique",
@@ -167,20 +156,8 @@ export const DEFAULT_EXERCISES: Exercise[] = [
     kineTips: "Excellent pour corriger la posture enroulée des épaules.",
     iconName: "Eye",
   },
-  {
-    id: "exo-epaule-5",
-    name: "Face Pull à la Poulie ou Élastique",
-    category: "Épaule",
-    bodyPart: "Rotateurs Externes & Trapèze Moyen",
-    equipment: "Poulie / Élastique",
-    trackingType: "weight_reps",
-    defaultRestSeconds: 60,
-    instructions: "Tirer la corde ou l'élastique vers le visage au niveau du front en écartant les poignets vers l'extérieur.",
-    kineTips: "Finir avec les pouces orientés vers l'arrière.",
-    iconName: "Target",
-  },
 
-  // --- BRAS & RENFORCEMENT MUSCU ---
+  // --- BRAS & COUDE ---
   {
     id: "exo-bras-1",
     name: "Curl Biceps (Haltère)",
@@ -206,7 +183,7 @@ export const DEFAULT_EXERCISES: Exercise[] = [
     iconName: "Hammer",
   },
 
-  // --- DOS, RACHIS & GAINAGE (STABILITÉ LOMBO-PELVIENNE) ---
+  // --- DOS, RACHIS & GAINAGE ---
   {
     id: "exo-dos-1",
     name: "Gainage Planche Ventrale",
@@ -230,18 +207,6 @@ export const DEFAULT_EXERCISES: Exercise[] = [
     instructions: "À quatre pattes, tendre simultanément le bras droit devant et la jambe gauche derrière. Maintenir 3 secondes puis alterner.",
     kineTips: "Le bassin et les épaules restent parfaitement horizontaux.",
     iconName: "Smile",
-  },
-  {
-    id: "exo-dos-3",
-    name: "Gainage Latéral (Side Plank)",
-    category: "Dos & Tronc",
-    bodyPart: "Obliques & Carré des Lombes",
-    equipment: "Poids de corps / Tapis",
-    trackingType: "time",
-    defaultRestSeconds: 45,
-    instructions: "En appui sur un avant-bras et le bord externe du pied, corps bien aligné. Lever le bassin et maintenir la position.",
-    kineTips: "Alignement tête, torse, hanches et pieds irréprochable.",
-    iconName: "Activity",
   },
 
   // --- CHEVILLE, PIED & CARDIO ---
@@ -283,235 +248,6 @@ export const DEFAULT_EXERCISES: Exercise[] = [
   },
 ];
 
-export const DEFAULT_ROUTINES: Routine[] = [
-  {
-    id: "routine-genou-lca",
-    title: "Rééducation Genou - Phase 2 (Renfort & Stabilité)",
-    description: "Séance ciblée sur le renforcement du quadriceps, des fessiers et la proprioception du genou droit opéré.",
-    category: "Genou",
-    createdByKineId: "kine-1",
-    assignedToPatientId: "patient-1",
-    createdAt: "2026-09-15T10:00:00.000Z",
-    updatedAt: "2026-09-20T14:30:00.000Z",
-    exercises: [
-      {
-        id: "re-1",
-        exerciseId: "exo-cardio-1",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-cardio-1")!,
-        order: 1,
-        restSeconds: 0,
-        kineNotes: "Échauffement : marche rapide à 5.5 km/h, pente 2%. Pas de course pour le moment.",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetDistanceKm: 1.5, targetTimeSeconds: 900 },
-        ],
-      },
-      {
-        id: "re-2",
-        exerciseId: "exo-genou-3",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-genou-3")!,
-        order: 2,
-        restSeconds: 90,
-        laterality: "Côté Droit",
-        kineNotes: "Poussée symétrique. Ralentis bien la descente (3s). Consigne : pas de claquement en haut.",
-        targetSets: [
-          { setNumber: 1, type: "warmup", targetWeightKg: 30, targetReps: 12 },
-          { setNumber: 2, type: "normal", targetWeightKg: 50, targetReps: 10 },
-          { setNumber: 3, type: "normal", targetWeightKg: 55, targetReps: 10 },
-        ],
-      },
-      {
-        id: "re-3",
-        exerciseId: "exo-genou-1",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-genou-1")!,
-        order: 3,
-        restSeconds: 60,
-        kineNotes: "Objectif isométrique. Maintiens le dos collé et respire profondément.",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetTimeSeconds: 45 },
-          { setNumber: 2, type: "normal", targetTimeSeconds: 45 },
-          { setNumber: 3, type: "normal", targetTimeSeconds: 60 },
-        ],
-      },
-      {
-        id: "re-4",
-        exerciseId: "exo-genou-2",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-genou-2")!,
-        order: 4,
-        restSeconds: 45,
-        laterality: "Côté Droit",
-        kineNotes: "Concentre-toi sur la contraction du grand fessier droit au sommet.",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetReps: 12 },
-          { setNumber: 2, type: "normal", targetReps: 12 },
-          { setNumber: 3, type: "normal", targetReps: 12 },
-        ],
-      },
-      {
-        id: "re-5",
-        exerciseId: "exo-genou-4",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-genou-4")!,
-        order: 5,
-        restSeconds: 45,
-        laterality: "Côté Droit",
-        kineNotes: "Plateau d'équilibre. Déverrouille légèrement le genou droit.",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetTimeSeconds: 45 },
-          { setNumber: 2, type: "normal", targetTimeSeconds: 45 },
-        ],
-      },
-    ],
-  },
-  {
-    id: "routine-bras-haut",
-    title: "Renforcement Biceps & Épaules (Hevy Standard)",
-    description: "Séance haut du corps adaptée : isolation des bras et deltoïdes sans surcharger les articulations.",
-    category: "Bras",
-    createdByKineId: "kine-1",
-    assignedToPatientId: "patient-1",
-    createdAt: "2026-09-18T11:00:00.000Z",
-    updatedAt: "2026-09-21T09:15:00.000Z",
-    exercises: [
-      {
-        id: "reb-1",
-        exerciseId: "exo-cardio-1",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-cardio-1")!,
-        order: 1,
-        restSeconds: 0,
-        kineNotes: "Échauffement cardio 15 min",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetDistanceKm: 1.61, targetTimeSeconds: 900 },
-          { setNumber: 2, type: "normal", targetDistanceKm: 1.0, targetTimeSeconds: 600 },
-        ],
-      },
-      {
-        id: "reb-2",
-        exerciseId: "exo-bras-2",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-bras-2")!,
-        order: 2,
-        restSeconds: 60,
-        kineNotes: "Charge progressive. Veille à ne pas compenser avec les lombaires.",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetWeightKg: 25, targetReps: 7 },
-          { setNumber: 2, type: "normal", targetWeightKg: 25, targetReps: 7 },
-          { setNumber: 3, type: "normal", targetWeightKg: 25, targetReps: 8 },
-        ],
-      },
-      {
-        id: "reb-3",
-        exerciseId: "exo-epaule-3",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-epaule-3")!,
-        order: 3,
-        restSeconds: 60,
-        kineNotes: "Garde les bras à 30° vers l'avant (plan scapulaire).",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetWeightKg: 8, targetReps: 12 },
-          { setNumber: 2, type: "normal", targetWeightKg: 8, targetReps: 12 },
-          { setNumber: 3, type: "normal", targetWeightKg: 8, targetReps: 10 },
-        ],
-      },
-    ],
-  },
-  {
-    id: "routine-epaule-coiffe",
-    title: "Épaule & Coiffe des Rotateurs - Stabilisation",
-    description: "Centrage gléno-huméral, travail des rotateurs externes et renforcement scapulaire doux.",
-    category: "Épaule",
-    createdByKineId: "kine-1",
-    assignedToPatientId: "patient-2",
-    createdAt: "2026-09-17T08:30:00.000Z",
-    updatedAt: "2026-09-20T16:00:00.000Z",
-    exercises: [
-      {
-        id: "rep-1",
-        exerciseId: "exo-epaule-1",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-epaule-1")!,
-        order: 1,
-        restSeconds: 45,
-        laterality: "Côté Droit",
-        kineNotes: "Élastique jaune ou rouge. 15 répétitions très propres, aucune douleur permise.",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetElasticLevel: "Jaune (Léger - 5kg)", targetReps: 15 },
-          { setNumber: 2, type: "normal", targetElasticLevel: "Jaune (Léger - 5kg)", targetReps: 15 },
-          { setNumber: 3, type: "normal", targetElasticLevel: "Rouge (Moyen - 10kg)", targetReps: 12 },
-        ],
-      },
-      {
-        id: "rep-2",
-        exerciseId: "exo-epaule-2",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-epaule-2")!,
-        order: 2,
-        restSeconds: 45,
-        kineNotes: "Wall slide sans décoller les coudes.",
-        targetSets: [
-          { setNumber: 1, type: "normal", targetReps: 10 },
-          { setNumber: 2, type: "normal", targetReps: 10 },
-          { setNumber: 3, type: "normal", targetReps: 10 },
-        ],
-      },
-    ],
-  },
-];
-
-export const DEFAULT_WORKOUT_HISTORY: WorkoutSession[] = [
-  {
-    id: "session-hist-1",
-    routineId: "routine-genou-lca",
-    routineTitle: "Rééducation Genou - Phase 2 (Renfort & Stabilité)",
-    patientId: "patient-1",
-    patientName: "Lucas Martin",
-    kineId: "kine-1",
-    startTime: "2026-09-20T17:00:00.000Z",
-    endTime: "2026-09-20T17:42:30.000Z",
-    durationSeconds: 2550, // ~42 mins
-    totalVolumeKg: 1450,
-    completedSetsCount: 14,
-    totalSetsCount: 14,
-    painLevel: 2,
-    rpeEffort: "Modéré (3-4)",
-    patientFeedback: "Excellente séance. Le genou répond bien, aucune douleur au repos. Légère gêne en fin de presse mais très supportable (2/10).",
-    kineComment: "Parfait Lucas ! On augmente progressivement la charge sur la presse la semaine prochaine si pas de réaction inflammatoire.",
-    isCompleted: true,
-    createdAt: "2026-09-20T17:45:00.000Z",
-    exercises: [
-      {
-        exerciseId: "exo-cardio-1",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-cardio-1")!,
-        kineNotes: "Échauffement marche",
-        restSeconds: 0,
-        sets: [
-          {
-            setNumber: 1,
-            type: "normal",
-            completed: true,
-            actualDistanceKm: 1.61,
-            actualTimeSeconds: 900,
-            previousSummary: "1.61 km en 15:00",
-          },
-        ],
-      },
-      {
-        exerciseId: "exo-genou-3",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-genou-3")!,
-        kineNotes: "Presse unilatérale",
-        restSeconds: 90,
-        laterality: "Côté Droit",
-        sets: [
-          { setNumber: 1, type: "warmup", completed: true, actualWeightKg: 30, actualReps: 12, previousSummary: "30kg x 12" },
-          { setNumber: 2, type: "normal", completed: true, actualWeightKg: 50, actualReps: 10, previousSummary: "50kg x 10" },
-          { setNumber: 3, type: "normal", completed: true, actualWeightKg: 55, actualReps: 10, previousSummary: "55kg x 10" },
-        ],
-      },
-      {
-        exerciseId: "exo-genou-1",
-        exercise: DEFAULT_EXERCISES.find((e) => e.id === "exo-genou-1")!,
-        kineNotes: "Chaise mur",
-        restSeconds: 60,
-        sets: [
-          { setNumber: 1, type: "normal", completed: true, actualTimeSeconds: 45, previousSummary: "45s" },
-          { setNumber: 2, type: "normal", completed: true, actualTimeSeconds: 45, previousSummary: "45s" },
-          { setNumber: 3, type: "normal", completed: true, actualTimeSeconds: 60, previousSummary: "60s" },
-        ],
-      },
-    ],
-  },
-];
+// Clean slate: no pre-created routines or mock workouts!
+export const DEFAULT_ROUTINES: Routine[] = [];
+export const DEFAULT_WORKOUT_HISTORY: WorkoutSession[] = [];

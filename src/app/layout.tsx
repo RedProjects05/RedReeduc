@@ -3,9 +3,9 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "RedReeduc | Kinésithérapie & Musculation Rééducative",
+  title: "RedReeduc | Kinésithérapie & Rééducation du Sport",
   description:
-    "Application de prescription et suivi de rééducation physique, inspirée par l'ergonomie et l'interface Hevy.",
+    "Application interactive de prescription et de suivi de séances de rééducation avec l'expérience Hevy.",
 };
 
 export default function RootLayout({
@@ -14,8 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className="dark h-full">
-      <body className="min-h-full flex flex-col bg-[#0b0d13] text-[#f8fafc]">
+    <html lang="fr" className="h-full">
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-100 selection:text-blue-900">
         <Navbar />
         <main className="flex-1 pb-16">{children}</main>
       </body>

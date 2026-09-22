@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b0d13;
-  --foreground: #f8fafc;
-  --card: #131722;
-  --card-border: #202738;
-  --card-hover: #1a202e;
-  --primary-blue: #007aff;
-  --primary-blue-hover: #0066d6;
-  --success-green: #00d084;
-  --success-green-bg: rgba(0, 208, 132, 0.15);
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+  --card-hover: #f1f5f9;
+  --primary-blue: #2563eb;
+  --primary-blue-hover: #1d4ed8;
+  --success-green: #10b981;
   --danger-red: #ef4444;
-  --muted-gray: #8f9bb3;
-  --subtle-gray: #4b5568;
+  --muted-text: #64748b;
+  --subtle-text: #94a3b8;
 }
 
 body {
@@ -24,23 +23,23 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom sport dark scrollbar */
+/* Elegant light scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0d13;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #202738;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #323d57;
+  background: #94a3b8;
 }
 
-/* Hide number spinner buttons for sleek inputs */
+/* Crisp inputs without number spinners */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -50,15 +49,14 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Pulse keyframes for active timer */
 @keyframes timerPulse {
   0%, 100% {
-    opacity: 1;
     transform: scale(1);
+    opacity: 1;
   }
   50% {
-    opacity: 0.85;
     transform: scale(1.02);
+    opacity: 0.9;
   }
 }
 

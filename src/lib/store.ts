@@ -10,23 +10,21 @@ import {
 import { Exercise, Routine, UserProfile, WorkoutSession } from "./types";
 
 const STORAGE_KEYS = {
-  USERS: "redreeduc_users_v1",
-  ACTIVE_USER_ID: "redreeduc_active_user_v1",
-  EXERCISES: "redreeduc_exercises_v1",
-  ROUTINES: "redreeduc_routines_v1",
-  WORKOUTS: "redreeduc_workouts_v1",
+  USERS: "redreeduc_users_v2",
+  ACTIVE_USER_ID: "redreeduc_active_user_v2",
+  EXERCISES: "redreeduc_exercises_v2",
+  ROUTINES: "redreeduc_routines_v2",
+  WORKOUTS: "redreeduc_workouts_v2",
 };
 
-// In-memory fallback
 let memoryState = {
   users: DEFAULT_USERS,
-  activeUserId: "patient-1", // default as patient to test Hevy live workout directly!
+  activeUserId: "patient-reda", // Default is Reda!
   exercises: DEFAULT_EXERCISES,
   routines: DEFAULT_ROUTINES,
   workouts: DEFAULT_WORKOUT_HISTORY,
 };
 
-// Dispatch storage event so all hooks update reactively
 function notifyChange() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("redreeduc_store_updated"));
@@ -34,7 +32,54 @@ function notifyChange() {
 }
 
 export const RedReeducStore = {
-  // --- USERS & AUTH ---
+  // Sync with Cloud Neon PostgreSQL API in background
+  async syncFromCloud() {
+    if (typeof window === "undefined") return;
+    try {
+      // 1. Trigger DB init check
+      fetch("/api/db/init").catch(() => {});
+
+      // 2. Fetch Users
+      const usersRes = await fetch("/api/users");
+      if (usersRes.ok) {
+        const cloudUsers = await usersRes.json();
+        if (Array.isArray(cloudUsers) && cloudUsers.length > 0) {
+          this.setUsers(cloudUsers);
+        }
+      }
+
+      // 3. Fetch Routines
+      const routinesRes = await fetch("/api/routines");
+      if (routinesRes.ok) {
+        const cloudRoutines = await routinesRes.json();
+        if (Array.isArray(cloudRoutines)) {
+          this.setRoutines(cloudRoutines);
+        }
+      }
+
+      // 4. Fetch Workouts
+      const workoutsRes = await fetch("/api/workouts");
+      if (workoutsRes.ok) {
+        const cloudWorkouts = await workoutsRes.json();
+        if (Array.isArray(cloudWorkouts)) {
+          this.setWorkouts(cloudWorkouts);
+        }
+      }
+
+      // 5. Fetch Exercises
+      const exercisesRes = await fetch("/api/exercises");
+      if (exercisesRes.ok) {
+        const cloudExercises = await exercisesRes.json();
+        if (Array.isArray(cloudExercises) && cloudExercises.length > 0) {
+          this.setExercises(cloudExercises);
+        }
+      }
+    } catch (err) {
+      console.debug("Cloud sync fallback:", err);
+    }
+  },
+
+  // --- USERS ---
   getUsers(): UserProfile[] {
     if (typeof window === "undefined") return memoryState.users;
     const raw = localStorage.getItem(STORAGE_KEYS.USERS);
@@ -49,15 +94,28 @@ export const RedReeducStore = {
     }
   },
 
+  setUsers(users: UserProfile[]) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    }
+    memoryState.users = users;
+    notifyChange();
+  },
+
   getActiveUserId(): string {
     if (typeof window === "undefined") return memoryState.activeUserId;
-    return localStorage.getItem(STORAGE_KEYS.ACTIVE_USER_ID) || "patient-1";
+    return localStorage.getItem(STORAGE_KEYS.ACTIVE_USER_ID) || "patient-reda";
   },
 
   getActiveUser(): UserProfile {
     const users = this.getUsers();
     const activeId = this.getActiveUserId();
-    return users.find((u) => u.id === activeId) || users[1] || users[0];
+    return (
+      users.find((u) => u.id === activeId) ||
+      users.find((u) => u.role === "PATIENT") ||
+      users[0] ||
+      DEFAULT_USERS[1]
+    );
   },
 
   setActiveUserId(id: string) {
@@ -68,8 +126,33 @@ export const RedReeducStore = {
     notifyChange();
   },
 
+  async updateUserProfile(
+    userId: string,
+    data: { diagnosis?: string; medicalHistory?: string; targetGoals?: string }
+  ) {
+    const users = this.getUsers();
+    const index = users.findIndex((u) => u.id === userId);
+    if (index >= 0) {
+      users[index] = { ...users[index], ...data };
+      this.setUsers(users);
+    }
+
+    // Sync to Cloud
+    try {
+      await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: userId, ...data }),
+      });
+    } catch (e) {
+      console.debug("Error saving user profile to cloud:", e);
+    }
+  },
+
   getPatientsForKine(kineId: string): UserProfile[] {
-    return this.getUsers().filter((u) => u.role === "PATIENT" && (u.kineId === kineId || !u.kineId));
+    return this.getUsers().filter(
+      (u) => u.role === "PATIENT" && (u.kineId === kineId || !u.kineId)
+    );
   },
 
   // --- EXERCISES ---
@@ -87,7 +170,15 @@ export const RedReeducStore = {
     }
   },
 
-  addCustomExercise(newExo: Omit<Exercise, "id">): Exercise {
+  setExercises(exercises: Exercise[]) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.EXERCISES, JSON.stringify(exercises));
+    }
+    memoryState.exercises = exercises;
+    notifyChange();
+  },
+
+  async addCustomExercise(newExo: Omit<Exercise, "id">): Promise<Exercise> {
     const exercises = this.getExercises();
     const id = `custom-exo-${Date.now()}`;
     const exercise: Exercise = {
@@ -96,15 +187,23 @@ export const RedReeducStore = {
       isCustom: true,
     };
     const updated = [exercise, ...exercises];
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.EXERCISES, JSON.stringify(updated));
+    this.setExercises(updated);
+
+    // Sync to cloud
+    try {
+      await fetch("/api/exercises", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(exercise),
+      });
+    } catch (e) {
+      console.debug("Cloud exo sync error:", e);
     }
-    memoryState.exercises = updated;
-    notifyChange();
+
     return exercise;
   },
 
-  // --- ROUTINES / SEANCES ---
+  // --- ROUTINES ---
   getRoutines(): Routine[] {
     if (typeof window === "undefined") return memoryState.routines;
     const raw = localStorage.getItem(STORAGE_KEYS.ROUTINES);
@@ -119,45 +218,61 @@ export const RedReeducStore = {
     }
   },
 
+  setRoutines(routines: Routine[]) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.ROUTINES, JSON.stringify(routines));
+    }
+    memoryState.routines = routines;
+    notifyChange();
+  },
+
   getRoutineById(id: string): Routine | undefined {
     return this.getRoutines().find((r) => r.id === id);
   },
 
-  saveRoutine(routine: Routine) {
+  async saveRoutine(routine: Routine) {
     const routines = this.getRoutines();
     const index = routines.findIndex((r) => r.id === routine.id);
     let updated: Routine[];
+    const targetRoutine: Routine = {
+      ...routine,
+      id: routine.id || `routine-${Date.now()}`,
+      createdAt: routine.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
     if (index >= 0) {
       updated = [...routines];
-      updated[index] = { ...routine, updatedAt: new Date().toISOString() };
+      updated[index] = targetRoutine;
     } else {
-      updated = [
-        {
-          ...routine,
-          id: routine.id || `routine-${Date.now()}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        ...routines,
-      ];
+      updated = [targetRoutine, ...routines];
     }
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.ROUTINES, JSON.stringify(updated));
+    this.setRoutines(updated);
+
+    // Sync to Cloud Neon Postgres
+    try {
+      await fetch("/api/routines", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(targetRoutine),
+      });
+    } catch (e) {
+      console.debug("Cloud routine sync error:", e);
     }
-    memoryState.routines = updated;
-    notifyChange();
   },
 
-  deleteRoutine(id: string) {
+  async deleteRoutine(id: string) {
     const updated = this.getRoutines().filter((r) => r.id !== id);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.ROUTINES, JSON.stringify(updated));
+    this.setRoutines(updated);
+
+    try {
+      await fetch(`/api/routines?id=${id}`, { method: "DELETE" });
+    } catch (e) {
+      console.debug("Cloud routine delete error:", e);
     }
-    memoryState.routines = updated;
-    notifyChange();
   },
 
-  // --- WORKOUTS / SESSIONS REALISÉES ---
+  // --- WORKOUTS ---
   getWorkouts(): WorkoutSession[] {
     if (typeof window === "undefined") return memoryState.workouts;
     const raw = localStorage.getItem(STORAGE_KEYS.WORKOUTS);
@@ -172,11 +287,15 @@ export const RedReeducStore = {
     }
   },
 
-  getWorkoutById(id: string): WorkoutSession | undefined {
-    return this.getWorkouts().find((w) => w.id === id);
+  setWorkouts(workouts: WorkoutSession[]) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(workouts));
+    }
+    memoryState.workouts = workouts;
+    notifyChange();
   },
 
-  saveWorkout(workout: WorkoutSession) {
+  async saveWorkout(workout: WorkoutSession) {
     const workouts = this.getWorkouts();
     const index = workouts.findIndex((w) => w.id === workout.id);
     let updated: WorkoutSession[];
@@ -186,17 +305,41 @@ export const RedReeducStore = {
     } else {
       updated = [workout, ...workouts];
     }
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.WORKOUTS, JSON.stringify(updated));
+    this.setWorkouts(updated);
+
+    // Sync to Cloud Neon Postgres
+    try {
+      await fetch("/api/workouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(workout),
+      });
+    } catch (e) {
+      console.debug("Cloud workout save error:", e);
     }
-    memoryState.workouts = updated;
-    notifyChange();
   },
 
-  // Helper: Find previous set performance for an exercise
+  async sendKineComment(workoutId: string, comment: string) {
+    const workouts = this.getWorkouts();
+    const index = workouts.findIndex((w) => w.id === workoutId);
+    if (index >= 0) {
+      workouts[index] = { ...workouts[index], kineComment: comment };
+      this.setWorkouts(workouts);
+    }
+
+    try {
+      await fetch("/api/workouts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: workoutId, kineComment: comment }),
+      });
+    } catch (e) {
+      console.debug("Cloud workout comment error:", e);
+    }
+  },
+
   getPreviousPerformance(exerciseId: string, setNumber: number): string | null {
     const workouts = this.getWorkouts().filter((w) => w.isCompleted);
-    // Scan most recent sessions first
     for (const session of workouts) {
       const exEntry = session.exercises.find((e) => e.exerciseId === exerciseId);
       if (exEntry) {
@@ -235,7 +378,7 @@ export const RedReeducStore = {
     }
     memoryState = {
       users: DEFAULT_USERS,
-      activeUserId: "patient-1",
+      activeUserId: "patient-reda",
       exercises: DEFAULT_EXERCISES,
       routines: DEFAULT_ROUTINES,
       workouts: DEFAULT_WORKOUT_HISTORY,
@@ -244,11 +387,13 @@ export const RedReeducStore = {
   },
 };
 
-// React hook for component re-rendering on store change
 export function useRedReeducStore() {
   const [timestamp, setTimestamp] = useState(() => Date.now());
 
   useEffect(() => {
+    // Trigger initial cloud sync when mounted
+    RedReeducStore.syncFromCloud();
+
     const handler = () => setTimestamp(Date.now());
     window.addEventListener("redreeduc_store_updated", handler);
     return () => window.removeEventListener("redreeduc_store_updated", handler);
@@ -263,12 +408,19 @@ export function useRedReeducStore() {
     routines: RedReeducStore.getRoutines(),
     workouts: RedReeducStore.getWorkouts(),
     setActiveUserId: (id: string) => RedReeducStore.setActiveUserId(id),
+    updateUserProfile: (
+      userId: string,
+      data: { diagnosis?: string; medicalHistory?: string; targetGoals?: string }
+    ) => RedReeducStore.updateUserProfile(userId, data),
     saveRoutine: (r: Routine) => RedReeducStore.saveRoutine(r),
     deleteRoutine: (id: string) => RedReeducStore.deleteRoutine(id),
     saveWorkout: (w: WorkoutSession) => RedReeducStore.saveWorkout(w),
+    sendKineComment: (wId: string, comment: string) =>
+      RedReeducStore.sendKineComment(wId, comment),
     addCustomExercise: (e: Omit<Exercise, "id">) => RedReeducStore.addCustomExercise(e),
     getPreviousPerformance: (exoId: string, setNum: number) =>
       RedReeducStore.getPreviousPerformance(exoId, setNum),
     resetToDefaults: () => RedReeducStore.resetToDefaults(),
+    syncFromCloud: () => RedReeducStore.syncFromCloud(),
   };
 }

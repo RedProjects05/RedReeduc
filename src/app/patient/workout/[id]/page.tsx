@@ -1,19 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import {
-  AlertCircle,
   ChevronDown,
   Clock,
   Dumbbell,
-  MoreVertical,
   Plus,
   Trash2,
-  Undo2,
   Check,
-  User,
   HeartPulse,
 } from "lucide-react";
 import { useRedReeducStore } from "@/lib/store";
@@ -24,7 +19,6 @@ import {
   RPEEffort,
   WorkoutSession,
 } from "@/lib/types";
-import { formatSeconds } from "@/lib/utils";
 import { ExerciseThumbnail } from "@/components/ExerciseThumbnail";
 import { RestTimerFloating } from "@/components/RestTimerFloating";
 import { ExerciseSelectorModal } from "@/components/ExerciseSelectorModal";
@@ -107,7 +101,6 @@ export default function WorkoutSessionPage() {
       setActiveExercises(mapped);
     } else if (routineId === "free") {
       setWorkoutTitle("Entraînement Libre");
-      // Default to 1-2 standard exercises if starting fresh
       const defaultExo = allExercises[0];
       if (defaultExo) {
         setActiveExercises([
@@ -179,7 +172,7 @@ export default function WorkoutSessionPage() {
     return { totalVolume: volume, completedSetsCount: completed, totalSetsCount: total };
   }, [activeExercises]);
 
-  // Toggle set completion (Hevy UX: plays sound, turns green, triggers rest countdown)
+  // Toggle set completion
   const handleToggleSet = (exerciseIndex: number, setIndex: number) => {
     setActiveExercises((prev) => {
       const updated = [...prev];
@@ -193,7 +186,6 @@ export default function WorkoutSessionPage() {
 
       if (willBeCompleted) {
         playSetCompleteSound();
-        // Trigger rest timer if restSeconds > 0
         if (targetExo.restSeconds > 0) {
           setRestTotal(targetExo.restSeconds);
           setRestRemaining(targetExo.restSeconds);
@@ -206,7 +198,6 @@ export default function WorkoutSessionPage() {
     });
   };
 
-  // Update set field (Weight, Reps, Time, Distance, Elastic)
   const handleUpdateSetField = (
     exerciseIndex: number,
     setIndex: number,
@@ -223,7 +214,6 @@ export default function WorkoutSessionPage() {
     });
   };
 
-  // Add set to exercise
   const handleAddSet = (exerciseIndex: number) => {
     setActiveExercises((prev) => {
       const updated = [...prev];
@@ -249,35 +239,16 @@ export default function WorkoutSessionPage() {
     });
   };
 
-  // Remove set
-  const handleRemoveSet = (exerciseIndex: number, setIndex: number) => {
-    setActiveExercises((prev) => {
-      const updated = [...prev];
-      const targetExo = { ...updated[exerciseIndex] };
-      targetExo.sets.splice(setIndex, 1);
-      // Re-number sets
-      targetExo.sets = targetExo.sets.map((s, idx) => ({
-        ...s,
-        setNumber: idx + 1,
-      }));
-      updated[exerciseIndex] = targetExo;
-      return updated;
-    });
-  };
-
-  // Delete entire exercise
   const handleRemoveExercise = (exerciseIndex: number) => {
     if (confirm("Supprimer cet exercice de la séance ?")) {
       setActiveExercises((prev) => prev.filter((_, idx) => idx !== exerciseIndex));
     }
   };
 
-  // Toggle rest duration for exercise
   const handleToggleRestDuration = (exerciseIndex: number) => {
     setActiveExercises((prev) => {
       const updated = [...prev];
       const targetExo = { ...updated[exerciseIndex] };
-      // Cycle: 0s -> 45s -> 60s -> 90s -> 120s -> 0s
       const cycle = [0, 45, 60, 90, 120];
       const currentIdx = cycle.indexOf(targetExo.restSeconds);
       const nextDuration = cycle[(currentIdx + 1) % cycle.length];
@@ -287,7 +258,6 @@ export default function WorkoutSessionPage() {
     });
   };
 
-  // Add exercise from modal
   const handleSelectExerciseFromModal = (exo: Exercise) => {
     setActiveExercises((prev) => [
       ...prev,
@@ -305,8 +275,7 @@ export default function WorkoutSessionPage() {
     ]);
   };
 
-  // Finish Workout & Confirm Save
-  const handleConfirmFinish = (recapData: {
+  const handleConfirmFinish = async (recapData: {
     painLevel: number;
     rpeEffort: RPEEffort;
     feedback: string;
@@ -320,7 +289,7 @@ export default function WorkoutSessionPage() {
       routineTitle: workoutTitle,
       patientId: activeUser.id,
       patientName: activeUser.name,
-      kineId: activeUser.kineId || "kine-1",
+      kineId: activeUser.kineId || "kine-anais",
       startTime: new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
       endTime: new Date().toISOString(),
       durationSeconds: elapsedSeconds,
@@ -335,35 +304,35 @@ export default function WorkoutSessionPage() {
       createdAt: new Date().toISOString(),
     };
 
-    saveWorkout(newSession);
+    await saveWorkout(newSession);
     setIsRecapModalOpen(false);
     router.push("/patient/history");
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-3 py-3 min-h-screen">
+    <div className="max-w-2xl mx-auto px-4 py-4 min-h-screen">
       
-      {/* Top Header - Exact Hevy Look */}
-      <div className="sticky top-16 z-30 bg-[#0b0d13]/95 backdrop-blur-md pb-2 pt-1 border-b border-[#1b2234]">
+      {/* Top Header - High Contrast Bright Hevy Look */}
+      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-md pb-3 pt-2 border-b border-slate-200">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 cursor-pointer">
-            <ChevronDown className="w-5 h-5 text-white" />
-            <h1 className="text-xl font-black text-white tracking-tight">
+          <div className="flex items-center gap-2">
+            <ChevronDown className="w-5 h-5 text-slate-800" />
+            <h1 className="text-xl font-black text-slate-900 tracking-tight">
               {workoutTitle}
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setIsRestActive(!isRestActive)}
-              className="text-[#8F9BB3] hover:text-white p-1 rounded-lg transition-colors"
+              className="text-slate-500 hover:text-slate-900 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
               title="Chronomètre"
             >
               <Clock className="w-5 h-5" />
             </button>
             <button
               onClick={() => setIsRecapModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm rounded-xl transition-all shadow-md shadow-blue-600/30 active:scale-95 cursor-pointer"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm rounded-xl transition-all shadow-md shadow-blue-500/20 active:scale-95 cursor-pointer"
             >
               Terminer
             </button>
@@ -371,44 +340,44 @@ export default function WorkoutSessionPage() {
         </div>
 
         {/* Stats Row Under Header (Durée / Volume / Séries) */}
-        <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-[#1a2133] text-left">
-          <div>
-            <span className="block text-[11px] font-semibold text-[#8F9BB3]">Durée</span>
-            <span className="text-sm font-black text-blue-400 font-mono">
+        <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-slate-100 text-left">
+          <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+            <span className="block text-[10px] font-bold text-slate-500 uppercase">Durée</span>
+            <span className="text-sm font-black text-blue-600 font-mono">
               {elapsedSeconds < 60
                 ? `${elapsedSeconds}s`
                 : `${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s`}
             </span>
           </div>
 
-          <div>
-            <span className="block text-[11px] font-semibold text-[#8F9BB3]">Volume</span>
-            <span className="text-sm font-black text-white">
-              {totalVolume} <span className="text-xs font-normal text-[#8F9BB3]">kg</span>
+          <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+            <span className="block text-[10px] font-bold text-slate-500 uppercase">Volume</span>
+            <span className="text-sm font-black text-slate-900">
+              {totalVolume} <span className="text-xs font-normal text-slate-500">kg</span>
             </span>
           </div>
 
-          <div>
-            <span className="block text-[11px] font-semibold text-[#8F9BB3]">Séries</span>
-            <span className="text-sm font-black text-white">
+          <div className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+            <span className="block text-[10px] font-bold text-slate-500 uppercase">Séries</span>
+            <span className="text-sm font-black text-slate-900">
               {completedSetsCount} / {totalSetsCount}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Exercise Cards Container */}
+      {/* Exercise Cards */}
       <div className="space-y-4 mt-4 pb-28">
         {activeExercises.length === 0 ? (
-          <div className="bg-[#121622] border border-[#202738] rounded-2xl p-8 text-center space-y-3 my-6">
-            <Dumbbell className="w-10 h-10 text-blue-400 mx-auto" />
-            <h3 className="text-base font-bold text-white">Commencer l&apos;entraînement</h3>
-            <p className="text-xs text-[#8F9BB3]">
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-3 shadow-xs my-6">
+            <Dumbbell className="w-10 h-10 text-blue-600 mx-auto" />
+            <h3 className="text-base font-bold text-slate-900">Commencer l&apos;entraînement</h3>
+            <p className="text-xs text-slate-500">
               Ajoutez un exercice pour débuter votre rééducation.
             </p>
             <button
               onClick={() => setIsExerciseSelectorOpen(true)}
-              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl inline-flex items-center gap-1.5 shadow-lg shadow-blue-600/30"
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl inline-flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Ajouter un Exercice
             </button>
@@ -422,7 +391,7 @@ export default function WorkoutSessionPage() {
             return (
               <div
                 key={`${activeExo.exerciseId}-${exoIdx}`}
-                className="bg-[#121622] border border-[#202738] rounded-2xl p-4 shadow-sm space-y-3"
+                className="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-3"
               >
                 {/* Exercise Header */}
                 <div className="flex items-start justify-between gap-3">
@@ -434,15 +403,15 @@ export default function WorkoutSessionPage() {
                       size={20}
                     />
                     <div className="min-w-0">
-                      <h3 className="font-extrabold text-blue-400 text-base leading-snug truncate hover:underline cursor-pointer">
+                      <h3 className="font-black text-slate-900 text-base leading-snug truncate">
                         {activeExo.exercise.name}
                       </h3>
-                      <div className="flex items-center gap-2 text-[11px] text-[#8F9BB3] mt-0.5">
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 font-medium">
                         <span>{activeExo.exercise.bodyPart}</span>
                         {activeExo.laterality && (
                           <>
                             <span>•</span>
-                            <span className="text-amber-400 font-bold">
+                            <span className="text-amber-600 font-bold">
                               {activeExo.laterality}
                             </span>
                           </>
@@ -451,49 +420,48 @@ export default function WorkoutSessionPage() {
                     </div>
                   </div>
 
-                  {/* Actions Dropdown */}
                   <button
                     onClick={() => handleRemoveExercise(exoIdx)}
-                    className="p-1 text-[#8F9BB3] hover:text-red-400 rounded-lg transition-colors"
+                    className="p-1.5 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
                     title="Supprimer l'exercice"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Kiné Instruction Alert if present */}
+                {/* Kiné Instruction Alert */}
                 {activeExo.kineNotes && (
-                  <div className="bg-blue-950/40 border border-blue-800/40 rounded-xl px-3 py-2 text-xs flex items-start gap-2">
-                    <HeartPulse className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                  <div className="bg-blue-50 border border-blue-200/80 rounded-2xl px-3.5 py-2.5 text-xs flex items-start gap-2.5">
+                    <HeartPulse className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold text-blue-300">Consigne Kiné : </span>
-                      <span className="text-slate-300">{activeExo.kineNotes}</span>
+                      <span className="font-bold text-blue-900">Consigne Kiné (Anaïs) : </span>
+                      <span className="text-blue-800 font-medium">{activeExo.kineNotes}</span>
                     </div>
                   </div>
                 )}
 
-                {/* Rest Timer Switcher Pill */}
+                {/* Rest Timer Toggle */}
                 <div className="flex items-center justify-between text-xs">
                   <button
                     type="button"
                     onClick={() => handleToggleRestDuration(exoIdx)}
-                    className="inline-flex items-center gap-1.5 font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/30 px-2.5 py-1 rounded-lg border border-blue-800/30 transition-colors"
+                    className="inline-flex items-center gap-1.5 font-bold text-blue-700 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded-xl border border-blue-200 transition-colors cursor-pointer"
                   >
                     <Clock className="w-3.5 h-3.5" />
                     <span>
                       Repos : {activeExo.restSeconds === 0 ? "DÉSACTIVÉ" : `${activeExo.restSeconds}s`}
                     </span>
                   </button>
-                  <span className="text-[11px] text-[#8F9BB3]">
-                    Cliquez pour ajuster (0s / 45s / 60s / 90s)
+                  <span className="text-[11px] text-slate-400">
+                    Ajuster (0s / 45s / 60s / 90s)
                   </span>
                 </div>
 
-                {/* Sets Table - EXACT HEVY TABLE STRUCTURE */}
-                <div className="pt-1">
+                {/* Sets Table */}
+                <div className="pt-1 overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="text-[11px] font-bold uppercase tracking-wider text-[#8F9BB3] border-b border-[#1b2234]">
+                      <tr className="text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
                         <th className="pb-2 w-12 text-center">SÉRIE</th>
                         <th className="pb-2 text-center">PRÉCÉDENT</th>
                         <th className="pb-2 text-center">
@@ -503,11 +471,11 @@ export default function WorkoutSessionPage() {
                           {isCardio ? "TEMPS" : isTimeOnly ? "TEMPS (S)" : "RÉPS"}
                         </th>
                         <th className="pb-2 w-12 text-center">
-                          <Check className="w-4 h-4 mx-auto text-[#8F9BB3]" />
+                          <Check className="w-4 h-4 mx-auto text-slate-400" />
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#182030]">
+                    <tbody className="divide-y divide-slate-100">
                       {activeExo.sets.map((set, setIdx) => {
                         const isSetDone = set.completed;
 
@@ -515,7 +483,7 @@ export default function WorkoutSessionPage() {
                           <tr
                             key={setIdx}
                             className={`transition-colors ${
-                              isSetDone ? "bg-[#10b981]/10" : "hover:bg-[#151a26]"
+                              isSetDone ? "bg-emerald-50/60" : "hover:bg-slate-50"
                             }`}
                           >
                             {/* Set Number Badge */}
@@ -523,8 +491,8 @@ export default function WorkoutSessionPage() {
                               <span
                                 className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black ${
                                   set.type === "warmup"
-                                    ? "bg-amber-950 text-amber-300 border border-amber-700"
-                                    : "bg-[#1e273a] text-white"
+                                    ? "bg-amber-100 text-amber-800 border border-amber-300"
+                                    : "bg-slate-100 text-slate-800"
                                 }`}
                               >
                                 {set.type === "warmup" ? "W" : set.setNumber}
@@ -532,7 +500,7 @@ export default function WorkoutSessionPage() {
                             </td>
 
                             {/* Previous Performance Summary */}
-                            <td className="py-2.5 text-center text-xs text-[#8F9BB3] font-medium">
+                            <td className="py-2.5 text-center text-xs text-slate-500 font-medium">
                               {set.previousSummary || "-"}
                             </td>
 
@@ -552,7 +520,7 @@ export default function WorkoutSessionPage() {
                                       parseFloat(e.target.value) || 0
                                     )
                                   }
-                                  className="w-16 sm:w-20 bg-[#182030] border border-[#273248] rounded-lg py-1 px-2 text-center text-white font-bold text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-16 sm:w-20 bg-slate-50 border border-slate-200 rounded-xl py-1 px-2 text-center text-slate-900 font-bold text-xs sm:text-sm focus:outline-none focus:border-blue-600 focus:bg-white"
                                 />
                               ) : isElastic ? (
                                 <select
@@ -565,7 +533,7 @@ export default function WorkoutSessionPage() {
                                       e.target.value
                                     )
                                   }
-                                  className="w-24 bg-[#182030] border border-[#273248] rounded-lg py-1 px-1 text-center text-white font-medium text-[11px] focus:outline-none focus:border-blue-500"
+                                  className="w-24 bg-slate-50 border border-slate-200 rounded-xl py-1 px-1 text-center text-slate-900 font-bold text-[11px] focus:outline-none focus:border-blue-600 focus:bg-white"
                                 >
                                   <option value="Jaune (Léger - 5kg)">Jaune (5kg)</option>
                                   <option value="Rouge (Moyen - 10kg)">Rouge (10kg)</option>
@@ -574,7 +542,7 @@ export default function WorkoutSessionPage() {
                                   <option value="Noir (Maximal - 25kg)">Noir (25kg)</option>
                                 </select>
                               ) : isTimeOnly ? (
-                                <span className="text-xs text-[#8F9BB3]">-</span>
+                                <span className="text-xs text-slate-400 font-medium">-</span>
                               ) : (
                                 <input
                                   type="number"
@@ -589,7 +557,7 @@ export default function WorkoutSessionPage() {
                                       parseFloat(e.target.value) || 0
                                     )
                                   }
-                                  className="w-16 sm:w-20 bg-[#182030] border border-[#273248] rounded-lg py-1 px-2 text-center text-white font-bold text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-16 sm:w-20 bg-slate-50 border border-slate-200 rounded-xl py-1 px-2 text-center text-slate-900 font-bold text-xs sm:text-sm focus:outline-none focus:border-blue-600 focus:bg-white"
                                 />
                               )}
                             </td>
@@ -610,7 +578,7 @@ export default function WorkoutSessionPage() {
                                       parseInt(e.target.value) || 0
                                     )
                                   }
-                                  className="w-16 sm:w-20 bg-[#182030] border border-[#273248] rounded-lg py-1 px-2 text-center text-white font-bold text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-16 sm:w-20 bg-slate-50 border border-slate-200 rounded-xl py-1 px-2 text-center text-slate-900 font-bold text-xs sm:text-sm focus:outline-none focus:border-blue-600 focus:bg-white"
                                 />
                               ) : (
                                 <input
@@ -626,7 +594,7 @@ export default function WorkoutSessionPage() {
                                       parseInt(e.target.value) || 0
                                     )
                                   }
-                                  className="w-16 sm:w-20 bg-[#182030] border border-[#273248] rounded-lg py-1 px-2 text-center text-white font-bold text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-16 sm:w-20 bg-slate-50 border border-slate-200 rounded-xl py-1 px-2 text-center text-slate-900 font-bold text-xs sm:text-sm focus:outline-none focus:border-blue-600 focus:bg-white"
                                 />
                               )}
                             </td>
@@ -636,10 +604,10 @@ export default function WorkoutSessionPage() {
                               <button
                                 type="button"
                                 onClick={() => handleToggleSet(exoIdx, setIdx)}
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all mx-auto cursor-pointer ${
+                                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all mx-auto cursor-pointer ${
                                   isSetDone
-                                    ? "bg-[#00d084] text-black font-black shadow-md shadow-[#00d084]/40 scale-105"
-                                    : "bg-[#1b2234] text-[#4e5d7a] hover:bg-[#232c42] hover:text-white"
+                                    ? "bg-emerald-500 text-white font-black shadow-md shadow-emerald-500/30 scale-105"
+                                    : "bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-700 border border-slate-200"
                                 }`}
                               >
                                 <Check
@@ -661,9 +629,9 @@ export default function WorkoutSessionPage() {
                   <button
                     type="button"
                     onClick={() => handleAddSet(exoIdx)}
-                    className="w-full py-2 bg-[#182030] hover:bg-[#20293d] border border-[#273248] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5 text-blue-400" />
+                    <Plus className="w-3.5 h-3.5 text-blue-600" />
                     <span>Ajouter une Série</span>
                   </button>
                 </div>
@@ -672,12 +640,12 @@ export default function WorkoutSessionPage() {
           })
         )}
 
-        {/* Global Bottom Actions (Hevy style) */}
+        {/* Global Bottom Actions */}
         <div className="pt-2 space-y-3 text-center">
           <button
             type="button"
             onClick={() => setIsExerciseSelectorOpen(true)}
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Ajouter un Exercice</span>
@@ -686,8 +654,8 @@ export default function WorkoutSessionPage() {
           <div className="flex items-center justify-between gap-3 pt-1">
             <button
               type="button"
-              onClick={() => alert("Paramètres de séance : sons activés, timer automatique.")}
-              className="flex-1 py-2.5 bg-[#141926] hover:bg-[#1c2335] text-xs font-bold text-[#8F9BB3] hover:text-white rounded-xl border border-[#232b3e] transition-colors"
+              onClick={() => alert("Paramètres de séance : sons Web Audio activés, minuteur automatique.")}
+              className="flex-1 py-2.5 bg-white hover:bg-slate-100 text-xs font-bold text-slate-600 rounded-xl border border-slate-200 transition-colors cursor-pointer"
             >
               Paramètres
             </button>
@@ -698,7 +666,7 @@ export default function WorkoutSessionPage() {
                   router.push("/patient");
                 }
               }}
-              className="flex-1 py-2.5 bg-[#141926] hover:bg-red-950/40 text-xs font-bold text-red-400 hover:text-red-300 rounded-xl border border-red-900/30 transition-colors"
+              className="flex-1 py-2.5 bg-white hover:bg-red-50 text-xs font-bold text-red-600 rounded-xl border border-red-200 transition-colors cursor-pointer"
             >
               Abandonner l&apos;Entraînement
             </button>
@@ -706,7 +674,7 @@ export default function WorkoutSessionPage() {
         </div>
       </div>
 
-      {/* Floating Rest Timer Pill */}
+      {/* Floating Rest Timer */}
       <RestTimerFloating
         remainingSeconds={restRemaining}
         totalDuration={restTotal}
@@ -726,7 +694,7 @@ export default function WorkoutSessionPage() {
         exercises={allExercises}
       />
 
-      {/* Workout Finish & Recap Modal */}
+      {/* Workout Finish Recap Modal */}
       <WorkoutRecapModal
         isOpen={isRecapModalOpen}
         onClose={() => setIsRecapModalOpen(false)}
@@ -736,7 +704,7 @@ export default function WorkoutSessionPage() {
         completedSetsCount={completedSetsCount}
         totalSetsCount={totalSetsCount}
         exercisesCount={activeExercises.length}
-        kineName="Dr. Alexandre Dupont"
+        kineName="Anaïs"
       />
     </div>
   );

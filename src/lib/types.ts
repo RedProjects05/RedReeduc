@@ -8,7 +8,8 @@ export interface UserProfile {
   avatarUrl?: string;
   // Patient-specific fields
   diagnosis?: string;
-  targetNotes?: string;
+  medicalHistory?: string;
+  targetGoals?: string;
   kineId?: string;
   // Kiné-specific fields
   clinicName?: string;
@@ -94,7 +95,7 @@ export interface LoggedSet {
   setNumber: number;
   type: "normal" | "warmup" | "drop";
   completed: boolean;
-  previousSummary?: string; // ex: "25kg x 7" ou "1.61 km en 15:00" ou "45s"
+  previousSummary?: string;
   actualWeightKg?: number;
   actualReps?: number;
   actualTimeSeconds?: number;

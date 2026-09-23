@@ -9,7 +9,7 @@ export async function GET() {
       SELECT id, routine_id, routine_title, patient_id, patient_name, kine_id,
              start_time, end_time, duration_seconds, total_volume_kg, completed_sets_count,
              total_sets_count, exercises_json, pain_level, rpe_effort, patient_feedback,
-             kine_comment, is_completed, created_at
+             kine_comment, is_completed, shared_with_kine, created_at
       FROM workout_sessions
       ORDER BY start_time DESC;
     `;
@@ -32,6 +32,7 @@ export async function GET() {
       rpeEffort: (r.rpe_effort as WorkoutSession["rpeEffort"]) || undefined,
       patientFeedback: (r.patient_feedback as string) || undefined,
       kineComment: (r.kine_comment as string) || undefined,
+      sharedWithKine: r.shared_with_kine !== null ? Boolean(r.shared_with_kine) : true,
       isCompleted: Boolean(r.is_completed),
       createdAt: (r.created_at as Date)?.toISOString() || new Date().toISOString(),
     }));
@@ -52,7 +53,8 @@ export async function POST(req: Request) {
         id, routine_id, routine_title, patient_id, patient_name, kine_id,
         start_time, end_time, duration_seconds, total_volume_kg,
         completed_sets_count, total_sets_count, exercises_json,
-        pain_level, rpe_effort, patient_feedback, kine_comment, is_completed
+        pain_level, rpe_effort, patient_feedback, kine_comment,
+        is_completed, shared_with_kine
       ) VALUES (
         ${session.id},
         ${session.routineId || null},
@@ -71,11 +73,13 @@ export async function POST(req: Request) {
         ${session.rpeEffort || null},
         ${session.patientFeedback || null},
         ${session.kineComment || null},
-        ${session.isCompleted}
+        ${session.isCompleted},
+        ${session.sharedWithKine !== undefined ? session.sharedWithKine : true}
       )
       ON CONFLICT (id) DO UPDATE SET
         kine_comment = EXCLUDED.kine_comment,
-        is_completed = EXCLUDED.is_completed;
+        is_completed = EXCLUDED.is_completed,
+        shared_with_kine = EXCLUDED.shared_with_kine;
     `;
 
     return NextResponse.json({ success: true, session });
@@ -99,6 +103,22 @@ export async function PATCH(req: Request) {
     `;
 
     return NextResponse.json({ success: true });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "Missing session id" }, { status: 400 });
+
+    const sql = getDb();
+    await sql`DELETE FROM workout_sessions WHERE id = ${id};`;
+
+    return NextResponse.json({ success: true, deletedId: id });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: errorMsg }, { status: 500 });

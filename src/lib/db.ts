@@ -89,7 +89,13 @@ export async function initDatabase() {
       patient_feedback TEXT,
       kine_comment TEXT,
       is_completed BOOLEAN DEFAULT FALSE,
+      shared_with_kine BOOLEAN DEFAULT TRUE,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
   `;
+
+  // Safe non-blocking migrations for existing tables
+  try {
+    await sql`ALTER TABLE workout_sessions ADD COLUMN IF NOT EXISTS shared_with_kine BOOLEAN DEFAULT TRUE;`;
+  } catch {}
 }

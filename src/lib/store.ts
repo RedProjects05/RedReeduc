@@ -7,7 +7,7 @@ import {
   DEFAULT_USERS,
   DEFAULT_WORKOUT_HISTORY,
 } from "./default-data";
-import { Exercise, Routine, UserProfile, WorkoutSession } from "./types";
+import { Exercise, Routine, UserProfile, WorkoutSession, LiveWorkoutState, WorkoutSettings } from "./types";
 
 const STORAGE_KEYS = {
   USERS: "redreeduc_users_v2",
@@ -15,6 +15,16 @@ const STORAGE_KEYS = {
   EXERCISES: "redreeduc_exercises_v2",
   ROUTINES: "redreeduc_routines_v2",
   WORKOUTS: "redreeduc_workouts_v2",
+  ACTIVE_WORKOUT: "redreeduc_active_workout_v2",
+  SETTINGS: "redreeduc_workout_settings_v2",
+};
+
+export const DEFAULT_WORKOUT_SETTINGS: WorkoutSettings = {
+  soundEnabled: true,
+  restTimerAutoStart: true,
+  defaultRestSeconds: 60,
+  hapticsEnabled: true,
+  keepScreenAwake: true,
 };
 
 let memoryState = {
@@ -23,6 +33,8 @@ let memoryState = {
   exercises: DEFAULT_EXERCISES,
   routines: DEFAULT_ROUTINES,
   workouts: DEFAULT_WORKOUT_HISTORY,
+  activeLiveWorkout: null as LiveWorkoutState | null,
+  workoutSettings: DEFAULT_WORKOUT_SETTINGS,
 };
 
 function notifyChange() {
@@ -368,6 +380,61 @@ export const RedReeducStore = {
     return null;
   },
 
+  async deleteWorkout(id: string) {
+    const workouts = this.getWorkouts().filter((w) => w.id !== id);
+    this.setWorkouts(workouts);
+
+    try {
+      await fetch(`/api/workouts?id=${id}`, { method: "DELETE" });
+    } catch (e) {
+      console.debug("Cloud workout delete error:", e);
+    }
+  },
+
+  // --- ACTIVE LIVE WORKOUT (Background persistence) ---
+  getActiveLiveWorkout(): LiveWorkoutState | null {
+    if (typeof window === "undefined") return memoryState.activeLiveWorkout;
+    const raw = localStorage.getItem(STORAGE_KEYS.ACTIVE_WORKOUT);
+    if (!raw) return memoryState.activeLiveWorkout;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  },
+
+  setActiveLiveWorkout(live: LiveWorkoutState | null) {
+    if (typeof window !== "undefined") {
+      if (live) {
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_WORKOUT, JSON.stringify(live));
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.ACTIVE_WORKOUT);
+      }
+    }
+    memoryState.activeLiveWorkout = live;
+    notifyChange();
+  },
+
+  // --- WORKOUT SETTINGS ---
+  getWorkoutSettings(): WorkoutSettings {
+    if (typeof window === "undefined") return memoryState.workoutSettings;
+    const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+    if (!raw) return DEFAULT_WORKOUT_SETTINGS;
+    try {
+      return { ...DEFAULT_WORKOUT_SETTINGS, ...JSON.parse(raw) };
+    } catch {
+      return DEFAULT_WORKOUT_SETTINGS;
+    }
+  },
+
+  setWorkoutSettings(settings: WorkoutSettings) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    }
+    memoryState.workoutSettings = settings;
+    notifyChange();
+  },
+
   resetToDefaults() {
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEYS.USERS);
@@ -375,6 +442,8 @@ export const RedReeducStore = {
       localStorage.removeItem(STORAGE_KEYS.ROUTINES);
       localStorage.removeItem(STORAGE_KEYS.WORKOUTS);
       localStorage.removeItem(STORAGE_KEYS.ACTIVE_USER_ID);
+      localStorage.removeItem(STORAGE_KEYS.ACTIVE_WORKOUT);
+      localStorage.removeItem(STORAGE_KEYS.SETTINGS);
     }
     memoryState = {
       users: DEFAULT_USERS,
@@ -382,6 +451,8 @@ export const RedReeducStore = {
       exercises: DEFAULT_EXERCISES,
       routines: DEFAULT_ROUTINES,
       workouts: DEFAULT_WORKOUT_HISTORY,
+      activeLiveWorkout: null,
+      workoutSettings: DEFAULT_WORKOUT_SETTINGS,
     };
     notifyChange();
   },
@@ -407,6 +478,8 @@ export function useRedReeducStore() {
     exercises: RedReeducStore.getExercises(),
     routines: RedReeducStore.getRoutines(),
     workouts: RedReeducStore.getWorkouts(),
+    activeLiveWorkout: RedReeducStore.getActiveLiveWorkout(),
+    workoutSettings: RedReeducStore.getWorkoutSettings(),
     setActiveUserId: (id: string) => RedReeducStore.setActiveUserId(id),
     updateUserProfile: (
       userId: string,
@@ -415,6 +488,9 @@ export function useRedReeducStore() {
     saveRoutine: (r: Routine) => RedReeducStore.saveRoutine(r),
     deleteRoutine: (id: string) => RedReeducStore.deleteRoutine(id),
     saveWorkout: (w: WorkoutSession) => RedReeducStore.saveWorkout(w),
+    deleteWorkout: (id: string) => RedReeducStore.deleteWorkout(id),
+    setActiveLiveWorkout: (w: LiveWorkoutState | null) => RedReeducStore.setActiveLiveWorkout(w),
+    setWorkoutSettings: (s: WorkoutSettings) => RedReeducStore.setWorkoutSettings(s),
     sendKineComment: (wId: string, comment: string) =>
       RedReeducStore.sendKineComment(wId, comment),
     addCustomExercise: (e: Omit<Exercise, "id">) => RedReeducStore.addCustomExercise(e),

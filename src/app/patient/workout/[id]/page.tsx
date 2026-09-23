@@ -15,14 +15,17 @@ import { useRedReeducStore } from "@/lib/store";
 import {
   ActiveWorkoutExercise,
   Exercise,
+  LiveWorkoutState,
   LoggedSet,
   RPEEffort,
   WorkoutSession,
+  WorkoutSettings,
 } from "@/lib/types";
 import { ExerciseThumbnail } from "@/components/ExerciseThumbnail";
 import { RestTimerFloating } from "@/components/RestTimerFloating";
 import { ExerciseSelectorModal } from "@/components/ExerciseSelectorModal";
 import { WorkoutRecapModal } from "@/components/WorkoutRecapModal";
+import { WorkoutSettingsModal } from "@/components/WorkoutSettingsModal";
 import { playSetCompleteSound } from "@/lib/audio";
 
 export default function WorkoutSessionPage() {
@@ -36,6 +39,10 @@ export default function WorkoutSessionPage() {
     exercises: allExercises,
     saveWorkout,
     getPreviousPerformance,
+    activeLiveWorkout,
+    setActiveLiveWorkout,
+    workoutSettings,
+    setWorkoutSettings,
   } = useRedReeducStore();
 
   const routine = useMemo(() => {
@@ -44,7 +51,7 @@ export default function WorkoutSessionPage() {
 
   // Workout state
   const [workoutTitle, setWorkoutTitle] = useState(
-    routine ? routine.title : "Entraînement Libre"
+    routine ? routine.title : "Entraînement libre"
   );
   const [activeExercises, setActiveExercises] = useState<ActiveWorkoutExercise[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -59,9 +66,31 @@ export default function WorkoutSessionPage() {
   // Modals
   const [isExerciseSelectorOpen, setIsExerciseSelectorOpen] = useState(false);
   const [isRecapModalOpen, setIsRecapModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAbandonModalOpen, setIsAbandonModalOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize exercises from routine or blank
+  // Initialize exercises from routine or restore from activeLiveWorkout
   useEffect(() => {
+    if (isInitialized) return;
+
+    const isMatchingLive =
+      activeLiveWorkout &&
+      (activeLiveWorkout.routineId === routineId ||
+        (routineId === "free" && (!activeLiveWorkout.routineId || activeLiveWorkout.routineId === "free")));
+
+    if (isMatchingLive && activeLiveWorkout) {
+      setWorkoutTitle(activeLiveWorkout.workoutTitle);
+      setActiveExercises(activeLiveWorkout.activeExercises);
+      const startMs = new Date(activeLiveWorkout.startTime).getTime();
+      const currentElapsed = !isNaN(startMs)
+        ? Math.max(0, Math.floor((Date.now() - startMs) / 1000))
+        : activeLiveWorkout.elapsedSeconds;
+      setElapsedSeconds(currentElapsed);
+      setIsInitialized(true);
+      return;
+    }
+
     if (routine) {
       setWorkoutTitle(routine.title);
       const mapped: ActiveWorkoutExercise[] = routine.exercises.map((re) => {
@@ -71,7 +100,8 @@ export default function WorkoutSessionPage() {
             setNumber: ts.setNumber || idx + 1,
             type: ts.type || "normal",
             completed: false,
-            previousSummary: prev || (ts.targetWeightKg ? `${ts.targetWeightKg}kg x ${ts.targetReps || 10}` : undefined),
+            previousSummary:
+              prev || (ts.targetWeightKg ? `${ts.targetWeightKg}kg x ${ts.targetReps || 10}` : undefined),
             actualWeightKg: ts.targetWeightKg,
             actualReps: ts.targetReps,
             actualTimeSeconds: ts.targetTimeSeconds,
@@ -85,39 +115,94 @@ export default function WorkoutSessionPage() {
           exerciseId: re.exerciseId,
           exercise: re.exercise,
           kineNotes: re.kineNotes,
-          restSeconds: re.restSeconds,
+          restSeconds: re.restSeconds ?? (workoutSettings.defaultRestSeconds || 60),
           laterality: re.laterality,
-          sets: sets.length > 0 ? sets : [
-            {
-              setNumber: 1,
-              type: "normal",
-              completed: false,
-              actualWeightKg: 20,
-              actualReps: 10,
-            },
-          ],
+          sets:
+            sets.length > 0
+              ? sets
+              : [
+                  {
+                    setNumber: 1,
+                    type: "normal",
+                    completed: false,
+                    actualWeightKg: 20,
+                    actualReps: 10,
+                  },
+                ],
         };
       });
       setActiveExercises(mapped);
+      setActiveLiveWorkout({
+        routineId,
+        workoutTitle: routine.title,
+        activeExercises: mapped,
+        elapsedSeconds: 0,
+        startTime: new Date().toISOString(),
+        lastUpdatedTime: Date.now(),
+      });
+      setIsInitialized(true);
     } else if (routineId === "free") {
-      setWorkoutTitle("Entraînement Libre");
+      setWorkoutTitle("Entraînement libre");
       const defaultExo = allExercises[0];
-      if (defaultExo) {
-        setActiveExercises([
-          {
-            exerciseId: defaultExo.id,
-            exercise: defaultExo,
-            restSeconds: defaultExo.defaultRestSeconds || 60,
-            sets: [
-              { setNumber: 1, type: "normal", completed: false, actualWeightKg: 0, actualReps: 10 },
-              { setNumber: 2, type: "normal", completed: false, actualWeightKg: 0, actualReps: 10 },
-              { setNumber: 3, type: "normal", completed: false, actualWeightKg: 0, actualReps: 10 },
-            ],
-          },
-        ]);
-      }
+      const initialExercises: ActiveWorkoutExercise[] = defaultExo
+        ? [
+            {
+              exerciseId: defaultExo.id,
+              exercise: defaultExo,
+              restSeconds: defaultExo.defaultRestSeconds || workoutSettings.defaultRestSeconds || 60,
+              sets: [
+                { setNumber: 1, type: "normal", completed: false, actualWeightKg: 0, actualReps: 10 },
+                { setNumber: 2, type: "normal", completed: false, actualWeightKg: 0, actualReps: 10 },
+                { setNumber: 3, type: "normal", completed: false, actualWeightKg: 0, actualReps: 10 },
+              ],
+            },
+          ]
+        : [];
+
+      setActiveExercises(initialExercises);
+      setActiveLiveWorkout({
+        routineId: "free",
+        workoutTitle: "Entraînement libre",
+        activeExercises: initialExercises,
+        elapsedSeconds: 0,
+        startTime: new Date().toISOString(),
+        lastUpdatedTime: Date.now(),
+      });
+      setIsInitialized(true);
     }
-  }, [routine, routineId, allExercises, getPreviousPerformance]);
+  }, [
+    routine,
+    routineId,
+    allExercises,
+    getPreviousPerformance,
+    activeLiveWorkout,
+    setActiveLiveWorkout,
+    isInitialized,
+    workoutSettings.defaultRestSeconds,
+  ]);
+
+  // Sync state to activeLiveWorkout in store and localStorage
+  useEffect(() => {
+    if (!isInitialized) return;
+    setActiveLiveWorkout({
+      routineId,
+      workoutTitle,
+      activeExercises,
+      elapsedSeconds,
+      startTime:
+        activeLiveWorkout?.startTime ||
+        new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
+      lastUpdatedTime: Date.now(),
+    });
+  }, [
+    activeExercises,
+    workoutTitle,
+    elapsedSeconds,
+    isInitialized,
+    routineId,
+    setActiveLiveWorkout,
+    activeLiveWorkout?.startTime,
+  ]);
 
   // Live Workout duration timer
   useEffect(() => {
@@ -185,8 +270,15 @@ export default function WorkoutSessionPage() {
       updated[exerciseIndex] = targetExo;
 
       if (willBeCompleted) {
-        playSetCompleteSound();
-        if (targetExo.restSeconds > 0) {
+        if (workoutSettings.soundEnabled !== false) {
+          playSetCompleteSound();
+        }
+        if (typeof window !== "undefined" && "vibrate" in navigator && workoutSettings.hapticsEnabled) {
+          try {
+            navigator.vibrate(40);
+          } catch {}
+        }
+        if (workoutSettings.restTimerAutoStart !== false && targetExo.restSeconds > 0) {
           setRestTotal(targetExo.restSeconds);
           setRestRemaining(targetExo.restSeconds);
           setIsRestActive(true);
@@ -240,16 +332,14 @@ export default function WorkoutSessionPage() {
   };
 
   const handleRemoveExercise = (exerciseIndex: number) => {
-    if (confirm("Supprimer cet exercice de la séance ?")) {
-      setActiveExercises((prev) => prev.filter((_, idx) => idx !== exerciseIndex));
-    }
+    setActiveExercises((prev) => prev.filter((_, idx) => idx !== exerciseIndex));
   };
 
   const handleToggleRestDuration = (exerciseIndex: number) => {
     setActiveExercises((prev) => {
       const updated = [...prev];
       const targetExo = { ...updated[exerciseIndex] };
-      const cycle = [0, 45, 60, 90, 120];
+      const cycle = [0, 30, 45, 60, 90, 120];
       const currentIdx = cycle.indexOf(targetExo.restSeconds);
       const nextDuration = cycle[(currentIdx + 1) % cycle.length];
       targetExo.restSeconds = nextDuration;
@@ -264,7 +354,7 @@ export default function WorkoutSessionPage() {
       {
         exerciseId: exo.id,
         exercise: exo,
-        restSeconds: exo.defaultRestSeconds || 60,
+        restSeconds: exo.defaultRestSeconds || workoutSettings.defaultRestSeconds || 60,
         kineNotes: exo.kineTips,
         sets: [
           { setNumber: 1, type: "normal", completed: false, actualWeightKg: 20, actualReps: 10 },
@@ -275,10 +365,24 @@ export default function WorkoutSessionPage() {
     ]);
   };
 
+  const handleConfirmAbandon = () => {
+    setIsTimerRunning(false);
+    setIsRestActive(false);
+    setActiveLiveWorkout(null);
+    setIsAbandonModalOpen(false);
+    router.push("/patient");
+    setTimeout(() => {
+      if (window.location.pathname.includes("/workout/")) {
+        window.location.href = "/patient";
+      }
+    }, 200);
+  };
+
   const handleConfirmFinish = async (recapData: {
     painLevel: number;
     rpeEffort: RPEEffort;
     feedback: string;
+    sharedWithKine: boolean;
   }) => {
     setIsTimerRunning(false);
     setIsRestActive(false);
@@ -300,13 +404,20 @@ export default function WorkoutSessionPage() {
       painLevel: recapData.painLevel,
       rpeEffort: recapData.rpeEffort,
       patientFeedback: recapData.feedback,
+      sharedWithKine: recapData.sharedWithKine,
       isCompleted: true,
       createdAt: new Date().toISOString(),
     };
 
+    setActiveLiveWorkout(null);
     await saveWorkout(newSession);
     setIsRecapModalOpen(false);
     router.push("/patient/history");
+    setTimeout(() => {
+      if (window.location.pathname !== "/patient/history") {
+        window.location.href = "/patient/history";
+      }
+    }, 350);
   };
 
   return (
@@ -379,7 +490,7 @@ export default function WorkoutSessionPage() {
               onClick={() => setIsExerciseSelectorOpen(true)}
               className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl inline-flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> Ajouter un Exercice
+              <Plus className="w-4 h-4" /> Ajouter un exercice
             </button>
           </div>
         ) : (
@@ -632,7 +743,7 @@ export default function WorkoutSessionPage() {
                     className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Ajouter une Série</span>
+                    <span>Ajouter une série</span>
                   </button>
                 </div>
               </div>
@@ -648,27 +759,23 @@ export default function WorkoutSessionPage() {
             className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Ajouter un Exercice</span>
+            <span>Ajouter un exercice</span>
           </button>
 
           <div className="flex items-center justify-between gap-3 pt-1">
             <button
               type="button"
-              onClick={() => alert("Paramètres de séance : sons Web Audio activés, minuteur automatique.")}
+              onClick={() => setIsSettingsOpen(true)}
               className="flex-1 py-2.5 bg-white hover:bg-slate-100 text-xs font-bold text-slate-600 rounded-xl border border-slate-200 transition-colors cursor-pointer"
             >
               Paramètres
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (confirm("Êtes-vous sûr de vouloir abandonner cet entraînement ?")) {
-                  router.push("/patient");
-                }
-              }}
+              onClick={() => setIsAbandonModalOpen(true)}
               className="flex-1 py-2.5 bg-white hover:bg-red-50 text-xs font-bold text-red-600 rounded-xl border border-red-200 transition-colors cursor-pointer"
             >
-              Abandonner l&apos;Entraînement
+              Abandonner la séance
             </button>
           </div>
         </div>
@@ -693,6 +800,47 @@ export default function WorkoutSessionPage() {
         onSelectExercise={handleSelectExerciseFromModal}
         exercises={allExercises}
       />
+
+      {/* Settings Modal */}
+      <WorkoutSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={workoutSettings}
+        onSaveSettings={setWorkoutSettings}
+      />
+
+      {/* Abandon Confirmation Modal */}
+      {isAbandonModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
+            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-slate-900">Abandonner la séance ?</h3>
+              <p className="text-xs text-slate-500 mt-1 font-medium">
+                Votre progression pour cette séance ne sera pas enregistrée dans votre historique.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsAbandonModalOpen(false)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Continuer
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAbandon}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md shadow-red-500/20 transition-all cursor-pointer"
+              >
+                Abandonner
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Workout Finish Recap Modal */}
       <WorkoutRecapModal

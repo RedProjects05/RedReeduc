@@ -35,7 +35,7 @@ export default function RootHomePage() {
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold shadow-xs">
           <Activity className="w-4 h-4" />
-          <span>L&apos;ergonomie Hevy au service de votre Rééducation</span>
+          <span>L&apos;ergonomie Hevy au service de votre rééducation</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
@@ -62,10 +62,10 @@ export default function RootHomePage() {
 
             <div>
               <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
-                Mode Patient
+                Mode patient
               </span>
               <h2 className="text-xl font-black text-slate-900 mt-2 group-hover:text-blue-600 transition-colors">
-                Espace Patient (Reda)
+                Espace patient (Reda)
               </h2>
               <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">
                 Renseignez votre pathologie, lancez vos séances en direct, cochez vos séries en vert et transmettez vos scores de douleur.
@@ -75,7 +75,7 @@ export default function RootHomePage() {
             <ul className="space-y-2 text-xs text-slate-700 pt-3 border-t border-slate-100 font-medium">
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Profil &amp; Pathologie personnalisable par Reda</span>
+                <span>Profil &amp; pathologie personnalisables par Reda</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -93,7 +93,7 @@ export default function RootHomePage() {
             className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
           >
             <Play className="w-4 h-4 fill-white" />
-            <span>Entrer comme Patient (Reda)</span>
+            <span>Entrer comme patient (Reda)</span>
           </button>
         </div>
 
@@ -109,10 +109,10 @@ export default function RootHomePage() {
 
             <div>
               <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
-                Mode Kinésithérapeute
+                Mode kinésithérapeute
               </span>
               <h2 className="text-xl font-black text-slate-900 mt-2 group-hover:text-purple-600 transition-colors">
-                Espace Kiné (Anaïs)
+                Espace kiné (Anaïs)
               </h2>
               <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">
                 Créez des séances sur-mesure pour Reda, configurez les charges et suivez son évolution et ses alertes de douleur.
@@ -140,7 +140,7 @@ export default function RootHomePage() {
             className="w-full py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-purple-500/20 transition-all cursor-pointer"
           >
             <Stethoscope className="w-4 h-4" />
-            <span>Entrer comme Kiné (Anaïs)</span>
+            <span>Entrer comme kiné (Anaïs)</span>
           </button>
         </div>
       </div>

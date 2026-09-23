@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Dumbbell,
   Edit3,
+  Eye,
   Flame,
   HeartPulse,
   Play,
@@ -19,9 +20,14 @@ import {
 } from "lucide-react";
 import { useRedReeducStore } from "@/lib/store";
 import { formatDurationHuman } from "@/lib/utils";
+import { Routine } from "@/lib/types";
+import { RoutinePreviewModal } from "@/components/RoutinePreviewModal";
 
 export default function PatientDashboardPage() {
   const { activeUser, routines, workouts, updateUserProfile } = useRedReeducStore();
+
+  // Routine Preview Modal State
+  const [previewRoutine, setPreviewRoutine] = useState<Routine | null>(null);
 
   // Profile Edit Modal State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -59,7 +65,7 @@ export default function PatientDashboardPage() {
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-                Espace Patient
+                Espace patient
               </span>
               <span className="text-xs text-slate-500 font-medium">
                 Suivi par Anaïs (Kiné)
@@ -98,7 +104,7 @@ export default function PatientDashboardPage() {
               className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-2xl flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all"
             >
               <Plus className="w-4 h-4" />
-              <span>Séance Libre</span>
+              <span>Séance libre</span>
             </Link>
           </div>
         </div>
@@ -129,7 +135,7 @@ export default function PatientDashboardPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
             <Flame className="w-5 h-5 text-blue-600" />
-            <span>Séances Prescrites par Anaïs</span>
+            <span>Séances prescrites par Anaïs</span>
           </h2>
           <span className="text-xs text-slate-500 font-bold">
             {assignedRoutines.length} séance(s)
@@ -210,14 +216,23 @@ export default function PatientDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Start Button */}
-                  <div className="pt-5">
+                  {/* Action Buttons: Preview & Start */}
+                  <div className="pt-5 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewRoutine(routine)}
+                      className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      title="Aperçu des exercices sans démarrer"
+                    >
+                      <Eye className="w-4 h-4 text-slate-600" />
+                      <span>Aperçu</span>
+                    </button>
                     <Link
                       href={`/patient/workout/${routine.id}`}
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                      className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
                     >
                       <Play className="w-4 h-4 fill-white" />
-                      <span>Démarrer cette séance</span>
+                      <span>Démarrer</span>
                     </Link>
                   </div>
                 </div>
@@ -232,7 +247,7 @@ export default function PatientDashboardPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
             <Activity className="w-5 h-5 text-emerald-600" />
-            <span>Dernière Séance Réalisée</span>
+            <span>Dernière séance réalisée</span>
           </h2>
           <Link
             href="/patient/history"
@@ -325,7 +340,7 @@ export default function PatientDashboardPage() {
               <div className="flex items-center gap-2">
                 <HeartPulse className="w-5 h-5 text-rose-500" />
                 <h3 className="font-black text-slate-900 text-lg">
-                  Mon Profil &amp; Pathologie (Reda)
+                  Mon profil et pathologie (Reda)
                 </h3>
               </div>
               <button
@@ -398,6 +413,13 @@ export default function PatientDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Routine Preview Modal */}
+      <RoutinePreviewModal
+        isOpen={Boolean(previewRoutine)}
+        routine={previewRoutine}
+        onClose={() => setPreviewRoutine(null)}
+      />
     </div>
   );
 }

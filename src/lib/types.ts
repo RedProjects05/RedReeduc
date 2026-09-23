@@ -140,6 +140,28 @@ export interface WorkoutSession {
   rpeEffort?: RPEEffort;
   patientFeedback?: string;
   kineComment?: string;
+  sharedWithKine?: boolean; // True if shared with kiné, false if saved privately
   isCompleted: boolean;
   createdAt: string;
 }
+
+export interface LiveWorkoutState {
+  routineId?: string;
+  workoutTitle: string;
+  activeExercises: ActiveWorkoutExercise[];
+  elapsedSeconds: number;
+  startTime: string;
+  lastUpdatedTime: number;
+  isRestActive?: boolean;
+  restRemaining?: number;
+  restTotal?: number;
+}
+
+export interface WorkoutSettings {
+  soundEnabled: boolean;
+  restTimerAutoStart: boolean;
+  defaultRestSeconds: number;
+  hapticsEnabled: boolean;
+  keepScreenAwake: boolean;
+}
+

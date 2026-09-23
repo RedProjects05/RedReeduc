@@ -9,14 +9,18 @@ import {
   Clock,
   Dumbbell,
   HeartPulse,
+  Lock,
+  Trash2,
 } from "lucide-react";
 import { useRedReeducStore } from "@/lib/store";
 import { formatDurationHuman } from "@/lib/utils";
 import { ExerciseThumbnail } from "@/components/ExerciseThumbnail";
 
 export default function PatientHistoryPage() {
-  const { activeUser, workouts } = useRedReeducStore();
+  const { activeUser, workouts, deleteWorkout } = useRedReeducStore();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const patientWorkouts = workouts.filter((w) => w.patientId === activeUser.id);
 
@@ -33,7 +37,7 @@ export default function PatientHistoryPage() {
             <ArrowLeft className="w-4 h-4" /> Retour à l&apos;accueil
           </Link>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Historique &amp; Suivi Rééducation
+            Historique et suivi de rééducation
           </h1>
           <p className="text-xs text-slate-500 font-medium">
             Vos séances terminées et les retours transmis à Anaïs
@@ -68,12 +72,18 @@ export default function PatientHistoryPage() {
                 className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs space-y-4 transition-all"
               >
                 {/* Header of session */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Séance validée
-                      </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {workout.sharedWithKine === false ? (
+                        <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200 flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-slate-500" /> Séance privée
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Transmise à Anaïs
+                        </span>
+                      )}
                       <span className="text-xs text-slate-300">•</span>
                       <span className="text-xs text-slate-500 font-medium">
                         {new Date(workout.startTime).toLocaleDateString("fr-FR", {
@@ -90,7 +100,7 @@ export default function PatientHistoryPage() {
                     </h3>
                   </div>
 
-                  {/* Pain EVA Badge */}
+                  {/* Badges & Actions */}
                   <div className="flex items-center gap-2">
                     <span
                       className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 border ${
@@ -104,6 +114,15 @@ export default function PatientHistoryPage() {
                       <HeartPulse className="w-3.5 h-3.5" />
                       Douleur : {pain} / 10
                     </span>
+
+                    <button
+                      type="button"
+                      onClick={() => setWorkoutToDelete(workout.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
+                      title="Supprimer cette séance"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
@@ -206,6 +225,46 @@ export default function PatientHistoryPage() {
           })
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {workoutToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
+            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-slate-900">Supprimer la séance ?</h3>
+              <p className="text-xs text-slate-500 mt-1 font-medium">
+                Cette action retirera définitivement cette séance de votre historique.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setWorkoutToDelete(null)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={async () => {
+                  setIsDeleting(true);
+                  await deleteWorkout(workoutToDelete);
+                  setIsDeleting(false);
+                  setWorkoutToDelete(null);
+                }}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md shadow-red-500/20 transition-all cursor-pointer"
+              >
+                {isDeleting ? "Suppression..." : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

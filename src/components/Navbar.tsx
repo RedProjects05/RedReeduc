@@ -62,7 +62,7 @@ export function Navbar() {
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4" /> Tableau de Bord
+                <LayoutDashboard className="w-4 h-4" /> Tableau de bord
               </Link>
               <Link
                 href="/kine/routines/new"
@@ -72,7 +72,7 @@ export function Navbar() {
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
-                <PlusCircle className="w-4 h-4 text-blue-600" /> Créer une Séance
+                <PlusCircle className="w-4 h-4 text-blue-600" /> Créer une séance
               </Link>
               <Link
                 href="/exercises"
@@ -82,7 +82,7 @@ export function Navbar() {
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
-                <Dumbbell className="w-4 h-4" /> Pool d&apos;Exercices
+                <Dumbbell className="w-4 h-4" /> Banque d&apos;exercices
               </Link>
             </>
           ) : (
@@ -95,7 +95,7 @@ export function Navbar() {
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
-                <Flame className="w-4 h-4 text-blue-600" /> Mon Entraînement
+                <Flame className="w-4 h-4 text-blue-600" /> Mon entraînement
               </Link>
               <Link
                 href="/patient/history"
@@ -105,7 +105,7 @@ export function Navbar() {
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
-                <History className="w-4 h-4" /> Historique &amp; Douleur
+                <History className="w-4 h-4" /> Historique et douleur
               </Link>
               <Link
                 href="/exercises"
@@ -166,7 +166,7 @@ export function Navbar() {
               <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-2 border-b border-slate-100 mb-1">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Changer de Profil
+                    Changer de profil
                   </p>
                   <p className="text-[11px] text-slate-600">
                     Basculez entre le kiné et le patient

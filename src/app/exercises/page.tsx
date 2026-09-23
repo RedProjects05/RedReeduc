@@ -72,7 +72,7 @@ export function ExercisesLibraryPage() {
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
             <Dumbbell className="w-6 h-6 text-blue-600" />
-            <span>Pool d&apos;Exercices Rééducation &amp; Musculation</span>
+            <span>Banque d&apos;exercices de rééducation et musculation</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5 font-medium">
             {exercises.length} exercices disponibles (renforcement, mobilité, proprioception et cardio).
@@ -84,7 +84,7 @@ export function ExercisesLibraryPage() {
           className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Créer un Exercice Personnalisé</span>
+          <span>Créer un exercice personnalisé</span>
         </button>
       </div>
 
@@ -130,7 +130,7 @@ export function ExercisesLibraryPage() {
         {/* Category Pills */}
         <div className="space-y-1.5 pt-1 border-t border-slate-100">
           <span className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1">
-            Zone Corporelle / Spécialité
+            Zone corporelle / spécialité
           </span>
           <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
             {CATEGORIES.map((cat) => {
@@ -228,7 +228,7 @@ export function ExercisesLibraryPage() {
             <div className="space-y-3 text-xs">
               <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
                 <span className="block font-bold text-slate-700 uppercase text-[10px] mb-1">
-                  Instructions &amp; Exécution
+                  Instructions &amp; exécution
                 </span>
                 <p className="text-slate-800 leading-relaxed font-medium">
                   {selectedExoDetail.instructions}
@@ -238,7 +238,7 @@ export function ExercisesLibraryPage() {
               {selectedExoDetail.kineTips && (
                 <div className="bg-blue-50 p-3 rounded-2xl border border-blue-100 text-blue-900">
                   <span className="block font-bold text-blue-900 uppercase text-[10px] mb-1 flex items-center gap-1">
-                    <HeartPulse className="w-3.5 h-3.5 text-blue-600" /> Recommandations Kiné
+                    <HeartPulse className="w-3.5 h-3.5 text-blue-600" /> Recommandations kiné
                   </span>
                   <p className="font-medium">{selectedExoDetail.kineTips}</p>
                 </div>
@@ -250,7 +250,7 @@ export function ExercisesLibraryPage() {
                   <span className="font-black text-slate-900">{selectedExoDetail.equipment}</span>
                 </div>
                 <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  <span className="block text-[10px] text-slate-500 uppercase font-bold">Repos Conseillé</span>
+                  <span className="block text-[10px] text-slate-500 uppercase font-bold">Repos conseillé</span>
                   <span className="font-black text-slate-900">{selectedExoDetail.defaultRestSeconds}s</span>
                 </div>
               </div>

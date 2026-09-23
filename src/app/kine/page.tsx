@@ -22,7 +22,8 @@ export default function KineDashboardPage() {
   const [activeTab, setActiveTab] = useState<"patient" | "feed">("patient");
 
   const patients = users.filter((u) => u.role === "PATIENT");
-  const allCompletedWorkouts = workouts.filter((w) => w.isCompleted);
+  // Only workouts shared with kiné are visible in practitioner dashboard
+  const allCompletedWorkouts = workouts.filter((w) => w.isCompleted && w.sharedWithKine !== false);
   const painAlerts = allCompletedWorkouts.filter((w) => (w.painLevel ?? 0) >= 5);
 
   const handleSendComment = async (workoutId: string) => {
@@ -41,14 +42,14 @@ export default function KineDashboardPage() {
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-                Espace Praticien
+                Espace praticien
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                Anaïs • Kinésithérapeute du Sport
+                Anaïs • Kinésithérapeute du sport
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Tableau de Bord Rééducation
+              Tableau de bord de rééducation
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 font-medium">
               Prescrivez des séances sur-mesure à Reda, ajustez les charges et suivez ses retours de douleur en temps réel.
@@ -61,7 +62,7 @@ export default function KineDashboardPage() {
               className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-2xl flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Créer une Séance pour Reda</span>
+              <span>Créer une séance pour Reda</span>
             </Link>
           </div>
         </div>
@@ -81,7 +82,7 @@ export default function KineDashboardPage() {
           <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3">
             <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
               <Dumbbell className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Séances Prescrites</span>
+              <span>Séances prescrites</span>
             </div>
             <div className="text-xl font-black text-slate-900 mt-1">
               {routines.length}
@@ -91,7 +92,7 @@ export default function KineDashboardPage() {
           <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3">
             <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
               <Activity className="w-3.5 h-3.5 text-cyan-600" />
-              <span>Séances Réalisées</span>
+              <span>Séances réalisées</span>
             </div>
             <div className="text-xl font-black text-slate-900 mt-1">
               {allCompletedWorkouts.length}
@@ -101,7 +102,7 @@ export default function KineDashboardPage() {
           <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3">
             <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
               <HeartPulse className="w-3.5 h-3.5 text-rose-500" />
-              <span>Alertes Douleur (&gt;4)</span>
+              <span>Alertes douleur (&gt;4)</span>
             </div>
             <div className="text-xl font-black text-slate-900 mt-1 flex items-center gap-1.5">
               <span>{painAlerts.length}</span>
@@ -126,7 +127,7 @@ export default function KineDashboardPage() {
           }`}
         >
           <Users className="w-4 h-4 text-blue-600" />
-          <span>Patient (Reda) &amp; Séances</span>
+          <span>Patient (Reda) &amp; séances</span>
         </button>
         <button
           onClick={() => setActiveTab("feed")}
@@ -137,7 +138,7 @@ export default function KineDashboardPage() {
           }`}
         >
           <Activity className="w-4 h-4 text-emerald-600" />
-          <span>Bilans &amp; Douleur</span>
+          <span>Bilans &amp; douleur</span>
           {painAlerts.length > 0 && (
             <span className="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-black">
               {painAlerts.length}
@@ -173,7 +174,7 @@ export default function KineDashboardPage() {
                             {patient.name}
                           </h3>
                           <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                            Patient Suivi
+                            Patient suivi
                           </span>
                         </div>
                         <p className="text-xs text-rose-600 font-bold mt-0.5 flex items-center gap-1">
@@ -196,7 +197,7 @@ export default function KineDashboardPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                     <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-100 space-y-1">
                       <span className="font-extrabold text-slate-700 uppercase text-[10px] block">
-                        Antécédents Médicaux / Chirurgicaux
+                        Antécédents médicaux / chirurgicaux
                       </span>
                       <p className="text-slate-800 font-medium leading-relaxed">
                         {patient.medicalHistory || "Non renseigné par le patient"}
@@ -205,7 +206,7 @@ export default function KineDashboardPage() {
 
                     <div className="bg-blue-50/70 rounded-2xl p-3.5 border border-blue-100 space-y-1">
                       <span className="font-extrabold text-blue-900 uppercase text-[10px] block">
-                        Objectif Thérapeutique
+                        Objectif thérapeutique
                       </span>
                       <p className="text-blue-900 font-medium leading-relaxed">
                         {patient.targetGoals || "Non renseigné"}
@@ -216,11 +217,11 @@ export default function KineDashboardPage() {
                   {/* Clinical metrics summary */}
                   <div className="grid grid-cols-3 gap-3 text-center text-xs pt-1">
                     <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
-                      <span className="text-[10px] text-slate-500 uppercase block font-bold">Séances Actives</span>
+                      <span className="text-[10px] text-slate-500 uppercase block font-bold">Séances actives</span>
                       <span className="text-base font-black text-slate-900">{patientAssignedRoutines.length}</span>
                     </div>
                     <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
-                      <span className="text-[10px] text-slate-500 uppercase block font-bold">Dernière Séance</span>
+                      <span className="text-[10px] text-slate-500 uppercase block font-bold">Dernière séance</span>
                       <span className="text-xs font-black text-slate-900">
                         {lastSession
                           ? new Date(lastSession.startTime).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
@@ -228,7 +229,7 @@ export default function KineDashboardPage() {
                       </span>
                     </div>
                     <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
-                      <span className="text-[10px] text-slate-500 uppercase block font-bold">Dernier Score Douleur</span>
+                      <span className="text-[10px] text-slate-500 uppercase block font-bold">Dernier score douleur</span>
                       <span className={`text-base font-black ${
                         (lastSession?.painLevel ?? 0) > 4 ? "text-rose-600" : "text-emerald-600"
                       }`}>
@@ -243,7 +244,7 @@ export default function KineDashboardPage() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                       <Dumbbell className="w-5 h-5 text-blue-600" />
-                      <span>Séances Prescrites à Reda ({patientAssignedRoutines.length})</span>
+                      <span>Séances prescrites à Reda ({patientAssignedRoutines.length})</span>
                     </h3>
                   </div>
 
@@ -333,7 +334,7 @@ export default function KineDashboardPage() {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
               <Activity className="w-5 h-5 text-emerald-600" />
-              <span>Séances Réalisées &amp; Retours Douleur (En direct)</span>
+              <span>Séances réalisées &amp; retours douleur (en direct)</span>
             </h3>
             <span className="text-xs text-slate-500 font-semibold">
               Neon PostgreSQL

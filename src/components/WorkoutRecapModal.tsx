@@ -15,6 +15,7 @@ interface WorkoutRecapModalProps {
     painLevel: number;
     rpeEffort: RPEEffort;
     feedback: string;
+    sharedWithKine: boolean;
   }) => void;
   durationSeconds: number;
   totalVolumeKg: number;
@@ -56,12 +57,13 @@ export function WorkoutRecapModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = (sharedWithKine: boolean) => {
     setIsSubmitting(true);
     onConfirmSave({
       painLevel,
       rpeEffort,
       feedback: feedback.trim(),
+      sharedWithKine,
     });
   };
 
@@ -83,14 +85,14 @@ export function WorkoutRecapModal({
           </div>
           
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            Séance Terminée ! 🎉
+            Séance terminée ! 🎉
           </h2>
           <p className="text-xs text-slate-500 mt-1 font-medium">
-            Bravo ! Vos résultats sont prêts à être transmis à {kineName}.
+            Bravo ! Choisissez d&apos;enregistrer vos résultats pour vous seul ou de les transmettre à {kineName}.
           </p>
         </div>
 
-        {/* Hevy-style Summary Stats */}
+        {/* Summary Stats */}
         <div className="p-5 space-y-5">
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
@@ -136,14 +138,14 @@ export function WorkoutRecapModal({
             <PainScaleSelector
               value={painLevel}
               onChange={setPainLevel}
-              title="Douleur ressentie (Échelle EVA)"
-              subtitle="Transmis directement à votre kinésithérapeute"
+              title="Douleur ressentie (échelle EVA)"
+              subtitle="Permet d'adapter vos prochaines séances"
             />
 
             {/* RPE Effort */}
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1.5">
               <label className="block text-xs font-bold text-slate-700 uppercase">
-                Effort Perçu (RPE)
+                Effort perçu (RPE)
               </label>
               <select
                 value={rpeEffort}
@@ -158,15 +160,15 @@ export function WorkoutRecapModal({
               </select>
             </div>
 
-            {/* Feedback Message for Kiné */}
+            {/* Feedback Message */}
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1.5">
               <label className="block text-xs font-bold text-slate-700 uppercase">
-                Notes &amp; Remarques pour {kineName}
+                Notes &amp; remarques (facultatif)
               </label>
               <textarea
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Ex: Le genou a bien tenu sur les flexions, aucune instabilité. Légère tension sur le mollet..."
+                placeholder="Ex : Le genou a bien tenu sur les flexions, aucune instabilité. Légère tension sur le mollet..."
                 rows={3}
                 className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-600 resize-none font-medium"
               />
@@ -176,16 +178,29 @@ export function WorkoutRecapModal({
           {/* Action CTAs */}
           <div className="pt-2 flex flex-col gap-2.5">
             <button
-              onClick={handleSubmit}
+              onClick={() => handleSubmit(true)}
               disabled={isSubmitting}
-              className="w-full py-4 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all text-sm uppercase tracking-wide cursor-pointer"
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all text-sm cursor-pointer disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
-              <span>Enregistrer &amp; Transmettre à mon Kiné</span>
+              <span>
+                {isSubmitting ? "Enregistrement en cours..." : `Enregistrer et transmettre à mon kiné (${kineName})`}
+              </span>
             </button>
+
+            <button
+              onClick={() => handleSubmit(false)}
+              disabled={isSubmitting}
+              className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl flex items-center justify-center gap-2 border border-slate-200 transition-colors text-xs cursor-pointer disabled:opacity-50"
+            >
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Enregistrer uniquement (sans transmettre)</span>
+            </button>
+
             <button
               onClick={onClose}
-              className="w-full py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full py-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
             >
               Revenir à la séance
             </button>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { ActiveWorkoutBanner } from "@/components/ActiveWorkoutBanner";
 
 export const metadata: Metadata = {
   title: "RedReeduc | Kinésithérapie & Rééducation du Sport",
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 selection:bg-blue-100 selection:text-blue-900">
         <Navbar />
         <main className="flex-1 pb-16">{children}</main>
+        <ActiveWorkoutBanner />
       </body>
     </html>
   );

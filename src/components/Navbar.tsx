@@ -10,6 +10,7 @@ import {
   Flame,
   History,
   LayoutDashboard,
+  Lock,
   PlusCircle,
   RotateCcw,
   Stethoscope,
@@ -222,9 +223,20 @@ export function Navbar() {
                         setIsProfileOpen(false);
                       }
                     }}
-                    className="text-[11px] text-red-600 hover:text-red-700 flex items-center gap-1 font-medium cursor-pointer"
+                    className="text-[11px] text-slate-500 hover:text-red-600 flex items-center gap-1 font-medium cursor-pointer"
                   >
                     <RotateCcw className="w-3 h-3" /> Réinitialiser
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      await fetch("/api/auth/logout", { method: "POST" });
+                      window.location.href = "/login";
+                    }}
+                    className="text-[11px] text-blue-600 hover:text-blue-700 flex items-center gap-1 font-bold cursor-pointer"
+                    title="Verrouiller l'accès"
+                  >
+                    <Lock className="w-3 h-3" /> Verrouiller
                   </button>
                 </div>
               </div>

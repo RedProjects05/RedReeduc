@@ -7,6 +7,16 @@ export const metadata: Metadata = {
   title: "RedReeduc | Kinésithérapie & Rééducation du Sport",
   description:
     "Application interactive de prescription et de suivi de séances de rééducation avec l'expérience Hevy.",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
 };
 
 export default function RootLayout({

@@ -126,7 +126,7 @@ export default function RootHomePage() {
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>Pool de 30+ exercices kiné &amp; musculation</span>
+                <span>Pool de 120+ exercices musculation &amp; kiné</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0" />

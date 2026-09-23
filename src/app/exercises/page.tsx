@@ -15,6 +15,7 @@ import { ExerciseSelectorModal } from "@/components/ExerciseSelectorModal";
 
 const CATEGORIES: ("Tous" | ExerciseCategory)[] = [
   "Tous",
+  "Pectoraux & Dos",
   "Genou",
   "Épaule",
   "Dos & Tronc",
@@ -25,10 +26,22 @@ const CATEGORIES: ("Tous" | ExerciseCategory)[] = [
   "Mobilité & Étirement",
 ];
 
+const EQUIPMENT_FILTERS = [
+  "Tous",
+  "Machine",
+  "Haltères",
+  "Barre",
+  "Kettlebell",
+  "Poulie",
+  "Poids de corps",
+  "Élastique",
+];
+
 export function ExercisesLibraryPage() {
   const { exercises } = useRedReeducStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCat, setSelectedCat] = useState<"Tous" | ExerciseCategory>("Tous");
+  const [selectedEquip, setSelectedEquip] = useState<string>("Tous");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExoDetail, setSelectedExoDetail] = useState<Exercise | null>(null);
 
@@ -42,9 +55,14 @@ export function ExercisesLibraryPage() {
 
       const matchCat = selectedCat === "Tous" ? true : exo.category === selectedCat;
 
-      return matchSearch && matchCat;
+      const matchEquip =
+        selectedEquip === "Tous"
+          ? true
+          : exo.equipment.toLowerCase().includes(selectedEquip.toLowerCase());
+
+      return matchSearch && matchCat && matchEquip;
     });
-  }, [exercises, searchTerm, selectedCat]);
+  }, [exercises, searchTerm, selectedCat, selectedEquip]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -70,8 +88,8 @@ export function ExercisesLibraryPage() {
         </button>
       </div>
 
-      {/* Search & Categories */}
-      <div className="space-y-3">
+      {/* Search & Double Filter Bar (Matériel & Zone) */}
+      <div className="space-y-3 bg-white p-4 rounded-3xl border border-slate-200/80 shadow-xs">
         <div className="relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -79,28 +97,59 @@ export function ExercisesLibraryPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Rechercher par nom d'exercice, muscle, matériel..."
-            className="w-full bg-white border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-600 shadow-xs font-medium"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-4 py-2.5 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-blue-600 focus:bg-white font-medium transition-all"
           />
         </div>
 
+        {/* Equipment Filter Pills */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1">
+            <span>Matériel</span>
+            <span className="text-blue-600 font-extrabold">{filtered.length} exercice(s)</span>
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+            {EQUIPMENT_FILTERS.map((equip) => {
+              const active = selectedEquip === equip;
+              return (
+                <button
+                  key={equip}
+                  onClick={() => setSelectedEquip(equip)}
+                  className={`px-3 py-1 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    active
+                      ? "bg-blue-600 text-white shadow-xs scale-102"
+                      : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
+                  }`}
+                >
+                  {equip}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Category Pills */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
-          {CATEGORIES.map((cat) => {
-            const active = selectedCat === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCat(cat)}
-                className={`px-3.5 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors cursor-pointer ${
-                  active
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200"
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
+        <div className="space-y-1.5 pt-1 border-t border-slate-100">
+          <span className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider px-1">
+            Zone Corporelle / Spécialité
+          </span>
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+            {CATEGORIES.map((cat) => {
+              const active = selectedCat === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCat(cat)}
+                  className={`px-3 py-1 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    active
+                      ? "bg-slate-900 text-white shadow-xs scale-102"
+                      : "bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 border border-slate-200/60"
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

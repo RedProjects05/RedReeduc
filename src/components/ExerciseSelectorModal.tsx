@@ -21,6 +21,7 @@ interface ExerciseSelectorModalProps {
 
 const CATEGORIES: ("Tous" | ExerciseCategory)[] = [
   "Tous",
+  "Pectoraux & Dos",
   "Genou",
   "Épaule",
   "Dos & Tronc",
@@ -31,6 +32,17 @@ const CATEGORIES: ("Tous" | ExerciseCategory)[] = [
   "Mobilité & Étirement",
 ];
 
+const EQUIPMENT_FILTERS = [
+  "Tous",
+  "Machine",
+  "Haltères",
+  "Barre",
+  "Kettlebell",
+  "Poulie",
+  "Poids de corps",
+  "Élastique",
+];
+
 export function ExerciseSelectorModal({
   isOpen,
   onClose,
@@ -39,6 +51,7 @@ export function ExerciseSelectorModal({
 }: ExerciseSelectorModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<"Tous" | ExerciseCategory>("Tous");
+  const [selectedEquipment, setSelectedEquipment] = useState<string>("Tous");
   const [isCreatingCustom, setIsCreatingCustom] = useState(false);
 
   // New custom exercise form state
@@ -61,9 +74,14 @@ export function ExerciseSelectorModal({
       const matchesCat =
         selectedCategory === "Tous" ? true : exo.category === selectedCategory;
 
-      return matchesSearch && matchesCat;
+      const matchesEquip =
+        selectedEquipment === "Tous"
+          ? true
+          : exo.equipment.toLowerCase().includes(selectedEquipment.toLowerCase());
+
+      return matchesSearch && matchesCat && matchesEquip;
     });
-  }, [exercises, searchTerm, selectedCategory]);
+  }, [exercises, searchTerm, selectedCategory, selectedEquipment]);
 
   const handleCreateCustom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,18 +259,38 @@ export function ExerciseSelectorModal({
                 />
               </div>
 
+              {/* Equipment pills */}
+              <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none text-xs">
+                {EQUIPMENT_FILTERS.map((equip) => {
+                  const active = selectedEquipment === equip;
+                  return (
+                    <button
+                      key={equip}
+                      onClick={() => setSelectedEquipment(equip)}
+                      className={`px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                        active
+                          ? "bg-blue-600 text-white shadow-xs"
+                          : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
+                      }`}
+                    >
+                      {equip}
+                    </button>
+                  );
+                })}
+              </div>
+
               {/* Category pills */}
-              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+              <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none text-xs">
                 {CATEGORIES.map((cat) => {
                   const active = selectedCategory === cat;
                   return (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition-colors cursor-pointer ${
                         active
-                          ? "bg-blue-600 text-white shadow-xs"
-                          : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
+                          ? "bg-slate-900 text-white shadow-xs"
+                          : "bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200/60"
                       }`}
                     >
                       {cat}

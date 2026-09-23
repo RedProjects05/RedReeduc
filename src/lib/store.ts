@@ -319,6 +319,10 @@ export const RedReeducStore = {
     }
     this.setWorkouts(updated);
 
+    if (workout.isCompleted) {
+      this.setActiveLiveWorkout(null);
+    }
+
     // Sync to Cloud Neon Postgres
     try {
       await fetch("/api/workouts", {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ChevronDown,
@@ -57,6 +57,11 @@ export default function WorkoutSessionPage() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
 
+  // References for reliable background / wall-clock timers and exit safety
+  const isExitingRef = useRef(false);
+  const startTimeRef = useRef<number>(Date.now());
+  const restEndTimeRef = useRef<number | null>(null);
+
   // Floating rest timer state
   const [restRemaining, setRestRemaining] = useState(0);
   const [restTotal, setRestTotal] = useState(60);
@@ -83,13 +88,19 @@ export default function WorkoutSessionPage() {
       setWorkoutTitle(activeLiveWorkout.workoutTitle);
       setActiveExercises(activeLiveWorkout.activeExercises);
       const startMs = new Date(activeLiveWorkout.startTime).getTime();
-      const currentElapsed = !isNaN(startMs)
-        ? Math.max(0, Math.floor((Date.now() - startMs) / 1000))
-        : activeLiveWorkout.elapsedSeconds;
+      const validStart = !isNaN(startMs)
+        ? startMs
+        : Date.now() - (activeLiveWorkout.elapsedSeconds || 0) * 1000;
+      startTimeRef.current = validStart;
+      const currentElapsed = Math.max(0, Math.floor((Date.now() - validStart) / 1000));
       setElapsedSeconds(currentElapsed);
       setIsInitialized(true);
       return;
     }
+
+    const now = Date.now();
+    startTimeRef.current = now;
+    setElapsedSeconds(0);
 
     if (routine) {
       setWorkoutTitle(routine.title);
@@ -137,8 +148,8 @@ export default function WorkoutSessionPage() {
         workoutTitle: routine.title,
         activeExercises: mapped,
         elapsedSeconds: 0,
-        startTime: new Date().toISOString(),
-        lastUpdatedTime: Date.now(),
+        startTime: new Date(now).toISOString(),
+        lastUpdatedTime: now,
       });
       setIsInitialized(true);
     } else if (routineId === "free") {
@@ -165,8 +176,8 @@ export default function WorkoutSessionPage() {
         workoutTitle: "Entraînement libre",
         activeExercises: initialExercises,
         elapsedSeconds: 0,
-        startTime: new Date().toISOString(),
-        lastUpdatedTime: Date.now(),
+        startTime: new Date(now).toISOString(),
+        lastUpdatedTime: now,
       });
       setIsInitialized(true);
     }
@@ -183,58 +194,137 @@ export default function WorkoutSessionPage() {
 
   // Sync state to activeLiveWorkout in store and localStorage
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || isExitingRef.current) return;
+    const currentElapsed = Math.max(0, Math.floor((Date.now() - startTimeRef.current) / 1000));
     setActiveLiveWorkout({
       routineId,
       workoutTitle,
       activeExercises,
-      elapsedSeconds,
-      startTime:
-        activeLiveWorkout?.startTime ||
-        new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
+      elapsedSeconds: currentElapsed,
+      startTime: new Date(startTimeRef.current).toISOString(),
       lastUpdatedTime: Date.now(),
     });
   }, [
     activeExercises,
     workoutTitle,
-    elapsedSeconds,
     isInitialized,
     routineId,
     setActiveLiveWorkout,
-    activeLiveWorkout?.startTime,
   ]);
 
-  // Live Workout duration timer
+  // Live Workout duration timer (Wall-clock based with screen lock / background tab support)
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (isTimerRunning) {
-      interval = setInterval(() => {
-        setElapsedSeconds((prev) => prev + 1);
-      }, 1000);
-    }
+    if (!isTimerRunning) return;
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const diff = Math.max(0, Math.floor((now - startTimeRef.current) / 1000));
+      setElapsedSeconds(diff);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        updateTimer();
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", updateTimer);
+
     return () => {
-      if (interval) clearInterval(interval);
+      clearInterval(interval);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", updateTimer);
     };
   }, [isTimerRunning]);
 
-  // Rest countdown timer
-  useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-    if (isRestActive && restRemaining > 0) {
-      timer = setInterval(() => {
-        setRestRemaining((prev) => {
-          if (prev <= 1) {
-            setIsRestActive(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+  // Rest Timer Controller
+  const startRestTimer = useCallback((seconds: number, exoName?: string) => {
+    if (seconds <= 0) return;
+    setRestTotal(seconds);
+    setRestRemaining(seconds);
+    restEndTimeRef.current = Date.now() + seconds * 1000;
+    setCurrentRestExerciseName(exoName);
+    setIsRestActive(true);
+  }, []);
+
+  const handleToggleManualRest = () => {
+    if (isRestActive) {
+      setIsRestActive(false);
+      setRestRemaining(0);
+      restEndTimeRef.current = null;
+    } else {
+      const defaultSec = workoutSettings.defaultRestSeconds || 60;
+      startRestTimer(defaultSec, "Repos");
     }
-    return () => {
-      if (timer) clearInterval(timer);
+  };
+
+  const handleAdjustRestTime = (delta: number) => {
+    if (!restEndTimeRef.current) {
+      if (delta > 0) {
+        startRestTimer(delta, currentRestExerciseName || "Repos");
+      }
+      return;
+    }
+    const newEndTime = restEndTimeRef.current + delta * 1000;
+    const now = Date.now();
+    if (newEndTime <= now) {
+      setIsRestActive(false);
+      setRestRemaining(0);
+      restEndTimeRef.current = null;
+    } else {
+      restEndTimeRef.current = newEndTime;
+      const remaining = Math.ceil((newEndTime - now) / 1000);
+      setRestRemaining(remaining);
+      setRestTotal((prev) => Math.max(remaining, prev + delta));
+    }
+  };
+
+  const handleSkipRest = () => {
+    setIsRestActive(false);
+    setRestRemaining(0);
+    restEndTimeRef.current = null;
+  };
+
+  // Rest countdown timer (Wall-clock based with screen lock / background tab support)
+  useEffect(() => {
+    if (!isRestActive) return;
+
+    const checkRest = () => {
+      if (!restEndTimeRef.current) return;
+      const now = Date.now();
+      const remainingMs = restEndTimeRef.current - now;
+      const remainingSec = Math.ceil(remainingMs / 1000);
+      if (remainingSec <= 0) {
+        setIsRestActive(false);
+        setRestRemaining(0);
+        restEndTimeRef.current = null;
+      } else {
+        setRestRemaining(remainingSec);
+      }
     };
-  }, [isRestActive, restRemaining]);
+
+    checkRest();
+    const timer = setInterval(checkRest, 500);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        checkRest();
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", checkRest);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", checkRest);
+    };
+  }, [isRestActive]);
 
   // Calculate live volume and sets
   const { totalVolume, completedSetsCount, totalSetsCount } = useMemo(() => {
@@ -279,10 +369,7 @@ export default function WorkoutSessionPage() {
           } catch {}
         }
         if (workoutSettings.restTimerAutoStart !== false && targetExo.restSeconds > 0) {
-          setRestTotal(targetExo.restSeconds);
-          setRestRemaining(targetExo.restSeconds);
-          setIsRestActive(true);
-          setCurrentRestExerciseName(targetExo.exercise.name);
+          startRestTimer(targetExo.restSeconds, targetExo.exercise.name);
         }
       }
 
@@ -366,6 +453,7 @@ export default function WorkoutSessionPage() {
   };
 
   const handleConfirmAbandon = () => {
+    isExitingRef.current = true;
     setIsTimerRunning(false);
     setIsRestActive(false);
     setActiveLiveWorkout(null);
@@ -384,8 +472,14 @@ export default function WorkoutSessionPage() {
     feedback: string;
     sharedWithKine: boolean;
   }) => {
+    isExitingRef.current = true;
     setIsTimerRunning(false);
     setIsRestActive(false);
+
+    const finalDuration = Math.max(
+      elapsedSeconds,
+      Math.floor((Date.now() - startTimeRef.current) / 1000)
+    );
 
     const newSession: WorkoutSession = {
       id: `workout-${Date.now()}`,
@@ -394,9 +488,9 @@ export default function WorkoutSessionPage() {
       patientId: activeUser.id,
       patientName: activeUser.name,
       kineId: activeUser.kineId || "kine-anais",
-      startTime: new Date(Date.now() - elapsedSeconds * 1000).toISOString(),
+      startTime: new Date(startTimeRef.current).toISOString(),
       endTime: new Date().toISOString(),
-      durationSeconds: elapsedSeconds,
+      durationSeconds: finalDuration,
       totalVolumeKg: totalVolume,
       completedSetsCount,
       totalSetsCount,
@@ -435,9 +529,9 @@ export default function WorkoutSessionPage() {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsRestActive(!isRestActive)}
+              onClick={handleToggleManualRest}
               className="text-slate-500 hover:text-slate-900 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-              title="Chronomètre"
+              title="Chronomètre de repos"
             >
               <Clock className="w-5 h-5" />
             </button>
@@ -786,10 +880,8 @@ export default function WorkoutSessionPage() {
         remainingSeconds={restRemaining}
         totalDuration={restTotal}
         isActive={isRestActive}
-        onAdjustTime={(delta) =>
-          setRestRemaining((prev) => Math.max(0, prev + delta))
-        }
-        onSkip={() => setIsRestActive(false)}
+        onAdjustTime={handleAdjustRestTime}
+        onSkip={handleSkipRest}
         exerciseName={currentRestExerciseName}
       />
 

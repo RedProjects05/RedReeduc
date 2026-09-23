@@ -32,7 +32,21 @@ export function ActiveWorkoutBanner() {
 
     updateElapsed();
     const interval = setInterval(updateElapsed, 1000);
-    return () => clearInterval(interval);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        updateElapsed();
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", updateElapsed);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", updateElapsed);
+    };
   }, [activeLiveWorkout]);
 
   if (!activeLiveWorkout || isOnWorkoutPage) return null;
